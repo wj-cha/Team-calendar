@@ -141,11 +141,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
         <button class="today-btn" onclick="goToday()">오늘</button>
         <div class="sidebar-sec">팀원</div>
         <div id="sidebar-members"></div>
-        <div class="sidebar-sec">유형</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fbbc04"></div>휴가</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#34a853"></div>교육</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#4285f4"></div>출장</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ea4335"></div>기타</div>
       </div>
       <div class="cal-wrap">
         <div class="cal-header">
@@ -398,7 +393,8 @@ function renderCal(){
     const pills=schedules.filter(e=>e.start<=c.date&&e.end>=c.date).map(e=>{
       const idx=schedules.indexOf(e);
       const m=members[e.memberId];
-      return '<div class="event-pill" style="background:'+TYPE_COLOR[e.type]+';color:'+TYPE_TEXT[e.type]+'" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name[0]):'?')+' '+esc(e.type)+'</div>';
+      const bg=m?.color||'#999';
+      return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
     const taskPills=tasks.filter(t=>t.due===c.date).map(t=>{
       const idx=tasks.indexOf(t);
