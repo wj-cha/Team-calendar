@@ -5,15 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TeamCal v1</title>
 <style>
-.ti{display:inline-block;vertical-align:middle;width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-</style>
-<style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:20px}
 .app{background:#fff;border-radius:12px;border:1px solid #dadce0;overflow:hidden;max-width:1100px;margin:0 auto;box-shadow:0 1px 6px rgba(0,0,0,.08)}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #dadce0;flex-wrap:wrap}
 .logo{font-size:20px;font-weight:600;color:#202124;letter-spacing:-.5px}.logo span{color:#1a73e8}
-.version{font-size:11px;color:#80868b;margin-top:2px;align-self:flex-end;margin-bottom:2px}
+.version{font-size:11px;color:#80868b;align-self:flex-end;margin-bottom:2px}
 .spacer{flex:1}
 .add-btn{background:#1a73e8;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500}
 .add-btn:hover{background:#1557b0}
@@ -22,8 +19,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
 .tab:hover{color:#202124;background:#f8f9fa}
 .tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:500}
 .panel{display:none}.panel.active{display:block}
-
-/* CALENDAR */
 .cal-main{display:flex}
 .sidebar{width:190px;border-right:1px solid #dadce0;padding:12px 10px;flex-shrink:0}
 .sid-ctrl{display:flex;align-items:center;gap:4px;padding:4px 6px;margin-bottom:6px}
@@ -52,8 +47,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
 .other-month-cell{opacity:.5}
 .event-pill{font-size:11px;padding:2px 7px;border-radius:10px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
 .event-pill:hover{filter:brightness(.9)}
-
-/* TASK */
 .task-toolbar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid #dadce0;flex-wrap:wrap}
 .filter-select{border:1px solid #dadce0;border-radius:6px;padding:6px 10px;font-size:13px;color:#202124;background:#fff;cursor:pointer;outline:none}
 .filter-select:focus{border-color:#1a73e8}
@@ -84,23 +77,18 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
 .assignees{display:flex;margin-left:auto}
 .ass-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;border:2px solid #fff;margin-left:-5px}
 .empty-state{text-align:center;padding:60px 20px;color:#9aa0a6;font-size:14px}
-.empty-state i{font-size:36px;display:block;margin-bottom:10px}
-
-/* MEMBERS */
 .members-panel{padding:20px}
-.members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:4px}
+.members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .member-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px}
 .av-lg{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
 .member-info{flex:1;min-width:0}
 .member-info .mn{font-size:14px;font-weight:500;color:#202124}
 .member-info .mr{font-size:12px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.icon-action{background:none;border:none;color:#9aa0a6;cursor:pointer;padding:4px;border-radius:4px;font-size:17px;line-height:1}
+.icon-action{background:none;border:none;color:#9aa0a6;cursor:pointer;padding:4px;border-radius:4px;font-size:15px;line-height:1}
 .icon-action:hover{background:#f1f3f4;color:#202124}
 .icon-action.danger:hover{color:#ea4335;background:#fce8e6}
 .add-member-card{border:1.5px dashed #dadce0;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#1a73e8;font-size:13px;font-weight:500}
 .add-member-card:hover{background:#f8f9fa}
-
-/* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:14px;padding:24px;width:380px;max-width:96vw;box-shadow:0 8px 40px rgba(0,0,0,.18)}
@@ -125,40 +113,23 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
 .multi-sel{display:flex;flex-wrap:wrap;gap:6px}
 .ms-chip{padding:5px 12px;border-radius:14px;font-size:12px;cursor:pointer;border:1px solid #dadce0;color:#5f6368;background:none;transition:all .15s;font-weight:500}
 .ms-chip.sel{background:#1a73e8;color:#fff;border-color:#1a73e8}
-.detail-section{margin-bottom:12px}
-.detail-label{font-size:11px;font-weight:500;color:#80868b;letter-spacing:.5px;margin-bottom:5px}
-.detail-val{font-size:14px;color:#202124}
-
-@media(max-width:640px){
-  body{padding:8px}
-  .cal-main{flex-direction:column}
-  .sidebar{width:100%;border-right:none;border-bottom:1px solid #dadce0}
-  .members-grid{grid-template-columns:1fr}
-}
+@media(max-width:640px){body{padding:8px}.cal-main{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:1px solid #dadce0}.members-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="topbar">
-    <div>
-      <div class="logo">Team<span>Cal</span></div>
-    </div>
+    <div><div class="logo">Team<span>Cal</span></div></div>
     <span class="version">v1.0</span>
     <div class="spacer"></div>
-    <button onclick="loadFromNotion()" style="background:none;border:1px solid #dadce0;border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:#5f6368;display:flex;align-items:center;gap:5px;font-weight:500" title="Notion에서 최신 데이터 불러오기">
-      <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Notion 동기화
-    </button>
-    <button class="add-btn" id="main-add-btn" onclick="mainAdd()"><span id="add-icon"></span> <span id="add-label">일정 추가</span></button>
+    <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
   <div class="tab-bar">
-    <div class="tab active" onclick="switchTab('cal',this)" id="tab-cal"></div>
-    <div class="tab" onclick="switchTab('task',this)" id="tab-task"></div>
-    <div class="tab" onclick="switchTab('members',this)" id="tab-members"></div>
+    <div class="tab active" onclick="switchTab('cal',this)">📅 일정</div>
+    <div class="tab" onclick="switchTab('task',this)">✅ Task</div>
+    <div class="tab" onclick="switchTab('members',this)">👥 팀원 관리</div>
   </div>
 
-  <!-- CALENDAR -->
   <div class="panel active" id="panel-cal">
     <div class="cal-main">
       <div class="sidebar">
@@ -185,12 +156,9 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
     </div>
   </div>
 
-  <!-- TASK -->
   <div class="panel" id="panel-task">
     <div class="task-toolbar">
-      <select class="filter-select" id="task-filter-member" onchange="renderTasks()">
-        <option value="">전체 팀원</option>
-      </select>
+      <select class="filter-select" id="task-filter-member" onchange="renderTasks()"><option value="">전체 팀원</option></select>
       <select class="filter-select" id="task-filter-cat" onchange="renderTasks()">
         <option value="">전체 카테고리</option>
         <option>월마감</option><option>결산</option><option>세무</option><option>감사</option><option>보고</option><option>기타</option>
@@ -204,7 +172,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
     <div class="task-list" id="task-list"></div>
   </div>
 
-  <!-- MEMBERS -->
   <div class="panel" id="panel-members">
     <div class="members-panel">
       <div class="members-grid" id="members-grid"></div>
@@ -212,7 +179,7 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
   </div>
 </div>
 
-<!-- SCHEDULE ADD MODAL -->
+<!-- MODALS -->
 <div class="modal-overlay" id="modal-sched">
   <div class="modal">
     <h3>일정 추가</h3>
@@ -232,7 +199,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
   </div>
 </div>
 
-<!-- SCHEDULE DETAIL MODAL -->
 <div class="modal-overlay" id="modal-sdetail">
   <div class="modal">
     <div id="sd-content"></div>
@@ -243,7 +209,6 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
   </div>
 </div>
 
-<!-- TASK ADD MODAL -->
 <div class="modal-overlay" id="modal-task">
   <div class="modal">
     <h3>Task 추가</h3>
@@ -261,12 +226,11 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
     <div class="fg"><label>메모</label><textarea id="t-memo" placeholder="세부 내용을 입력하세요"></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-task')">취소</button>
-      <button class="btn-save" onclick="saveTask()">저장</button>
+      <button class="btn-save" onclick="saveSched_task()">저장</button>
     </div>
   </div>
 </div>
 
-<!-- TASK DETAIL MODAL -->
 <div class="modal-overlay" id="modal-tdetail">
   <div class="modal">
     <div id="td-content"></div>
@@ -277,11 +241,10 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
   </div>
 </div>
 
-<!-- MEMBER MODAL -->
 <div class="modal-overlay" id="modal-member">
   <div class="modal">
     <h3 id="mm-title">팀원 추가</h3>
-    <div class="fg"><label>이름</label><input type="text" id="mm-name" placeholder="예: 김원진"></div>
+    <div class="fg"><label>이름</label><input type="text" id="mm-name" placeholder="예: 윤찬호"></div>
     <div class="fg"><label>직책</label><input type="text" id="mm-role" placeholder="예: 회계팀 대리"></div>
     <div class="fg"><label>색상</label><div class="color-swatches" id="mm-swatches"></div></div>
     <div class="modal-actions">
@@ -292,243 +255,174 @@ body{background:#f8f9fa;min-height:100vh;padding:20px}
 </div>
 
 <script>
-/* ===== NOTION CONFIG ===== */
-const NOTION_DS_MEMBERS  = 'f96c946a-0634-4f55-ac1e-45ad0238c686';
-const NOTION_DS_SCHEDULES= '734c4892-818f-4589-9d8f-7b1b28e5b4d0';
-const NOTION_DS_TASKS    = 'c07a8279-7d11-4dd4-8a32-bf5e3afbfc64';
-const NOTION_DB_MEMBERS  = '00541854e2e24765b31eeec2e00469f9';
-const NOTION_DB_SCHEDULES= '5944af91acda417280fd89090736a5e7';
-const NOTION_DB_TASKS    = '802e510826a147ee88fa8c10cf4d97ba';
+/* ===== SUPABASE ===== */
+const SB_URL='https://bcxvunprnbhhvgpbajvp.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeHZ1bnBybmJoaHZncGJhanZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTEzMzMsImV4cCI6MjA5Mzk2NzMzM30.NtXnwMyV3afOi2a7jtpykBal-kKGMV1PagYJpibmmWY';
+const SBH={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 
-async function notionCall(prompt){
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:1000,
-      mcp_servers:[{type:'url',url:'https://mcp.notion.com/mcp',name:'notion'}],
-      messages:[{role:'user',content:prompt}]
-    })
-  });
-  const data=await res.json();
-  return data;
+async function sbGet(tbl){
+  const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?order=id',{headers:{...SBH,'Prefer':'return=representation'}});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+async function sbPost(tbl,body){
+  const r=await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...SBH,'Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+async function sbPatch(tbl,id,body){
+  const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id,{method:'PATCH',headers:{...SBH,'Prefer':'return=representation'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+async function sbDel(tbl,id){
+  const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id,{method:'DELETE',headers:SBH});
+  if(!r.ok)throw new Error(await r.text());
 }
 
-async function notionRead(prompt){
-  const data=await notionCall(prompt);
-  const results=data.content.filter(b=>b.type==='mcp_tool_result').map(b=>b.content?.[0]?.text||'').join('\n');
-  const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  return results||text;
+/* ===== STATUS TOAST ===== */
+function setStatus(msg,type){
+  let el=document.getElementById('sb-toast');
+  if(!el){el=document.createElement('div');el.id='sb-toast';el.style.cssText='position:fixed;bottom:16px;right:16px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transition:opacity .4s';document.body.appendChild(el);}
+  el.style.opacity='1';
+  const cfg={ok:['#e6f4ea','#137333','#ceead6'],err:['#fce8e6','#c5221f','#f5c6c6'],info:['#e8f0fe','#1a73e8','#c5d8fb']};
+  const [bg,color,border]=(cfg[type]||cfg.info);
+  Object.assign(el.style,{background:bg,color,border:'1px solid '+border});
+  el.textContent=msg;
+  if(type!=='info')setTimeout(()=>el.style.opacity='0',2500);
 }
 
-/* 상태 표시 */
-function setStatus(msg,type='info'){
-  let el=document.getElementById('sync-status');
-  if(!el){el=document.createElement('div');el.id='sync-status';el.style.cssText='position:fixed;bottom:16px;right:16px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transition:opacity .3s';document.body.appendChild(el);}
-  el.style.background=type==='ok'?'#e6f4ea':type==='err'?'#fce8e6':'#e8f0fe';
-  el.style.color=type==='ok'?'#137333':type==='err'?'#c5221f':'#1a73e8';
-  el.style.border=`1px solid ${type==='ok'?'#ceead6':type==='err'?'#f5c6c6':'#c5d8fb'}`;
-  el.style.opacity='1';el.textContent=msg;
-  if(type!=='info')setTimeout(()=>{el.style.opacity='0'},3000);
-}
-
-/* ===== LOAD FROM NOTION ===== */
-async function loadFromNotion(){
-  setStatus('Notion에서 데이터 불러오는 중…');
-  try{
-    /* 팀원 */
-    const mRaw=await notionRead(
-      `Query all pages from Notion database ID ${NOTION_DB_MEMBERS}. Return a JSON array only, no markdown, with fields: name(이름), role(직책), color(색상). If empty return [].`
-    );
-    let mArr=[];
-    try{mArr=JSON.parse(mRaw.replace(/```json|```/g,'').trim());}catch(e){}
-    if(Array.isArray(mArr)&&mArr.length>0){
-      members=mArr.map(m=>({name:m.name||'',role:m.role||'',color:m.color||'#1a73e8'}));
-    }
-
-    /* 일정 */
-    const sRaw=await notionRead(
-      `Query all pages from Notion database ID ${NOTION_DB_SCHEDULES}. Return a JSON array only, no markdown, with fields: memberId(팀원이름 mapped to index in [${members.map(m=>m.name).join(',')}]), type(유형), start(시작일 as YYYY-MM-DD), end(종료일 as YYYY-MM-DD), memo(메모), notionUrl(url). If empty return [].`
-    );
-    let sArr=[];
-    try{sArr=JSON.parse(sRaw.replace(/```json|```/g,'').trim());}catch(e){}
-    if(Array.isArray(sArr))schedules=sArr.filter(s=>s.start);
-
-    /* Task */
-    const tRaw=await notionRead(
-      `Query all pages from Notion database ID ${NOTION_DB_TASKS}. Return a JSON array only, no markdown, with fields: title(제목), cat(카테고리), pri(우선순위 as high/mid/low from 높음/중간/낮음), due(데드라인 as YYYY-MM-DD), assignees(담당자 as comma-separated names mapped to index array in [${members.map(m=>m.name).join(',')}]), memo(메모), done(완료 as boolean), notionUrl(url). If empty return [].`
-    );
-    let tArr=[];
-    try{tArr=JSON.parse(tRaw.replace(/```json|```/g,'').trim());}catch(e){}
-    if(Array.isArray(tArr))tasks=tArr.filter(t=>t.title);
-
-    setStatus('✓ Notion 동기화 완료','ok');
-    renderSidebar();renderCal();
-    if(curTab==='task'){renderTaskFilters();renderTasks();}
-    if(curTab==='members')renderMembersPanel();
-  }catch(e){
-    setStatus('Notion 연동 오류: '+e.message,'err');
-  }
-}
-
-/* ===== SAVE TO NOTION ===== */
-async function saveSchedToNotion(s){
-  const m=members[s.memberId];
-  await notionCall(
-    `Create a page in Notion database ID ${NOTION_DB_SCHEDULES} with properties: 제목="${m?.name||''} ${s.type}", 팀원이름="${m?.name||''}", 유형="${s.type}", 시작일="${s.start}", 종료일="${s.end}", 메모="${s.memo||''}". Reply OK.`
-  );
-}
-async function saveTaskToNotion(t){
-  const assigneeNames=t.assignees.map(i=>members[i]?.name||'').join(', ');
-  const priMap={high:'높음',mid:'중간',low:'낮음'};
-  await notionCall(
-    `Create a page in Notion database ID ${NOTION_DB_TASKS} with properties: 제목="${t.title}", 카테고리="${t.cat}", 우선순위="${priMap[t.pri]||'중간'}", 데드라인="${t.due}", 담당자="${assigneeNames}", 메모="${t.memo||''}", 완료=false. Reply OK.`
-  );
-}
-async function saveMemberToNotion(m){
-  await notionCall(
-    `Create a page in Notion database ID ${NOTION_DB_MEMBERS} with properties: 이름="${m.name}", 직책="${m.role||''}", 색상="${m.color}". Reply OK.`
-  );
-}
-
-/* ===== END NOTION ===== */
-const HOLIDAYS={
-  '2026-01-01':'신정',
-  '2026-02-16':'설날 연휴',
-  '2026-02-17':'설날',
-  '2026-02-18':'설날 연휴',
-  '2026-03-01':'삼일절',
-  '2026-03-02':'대체공휴일(삼일절)',
-  '2026-05-05':'어린이날',
-  '2026-05-24':'부처님오신날',
-  '2026-05-25':'대체공휴일(부처님오신날)',
-  '2026-06-03':'지방선거',
-  '2026-06-06':'현충일',
-  '2026-07-17':'제헌절',
-  '2026-08-15':'광복절',
-  '2026-08-17':'대체공휴일(광복절)',
-  '2026-09-24':'추석 연휴',
-  '2026-09-25':'추석',
-  '2026-09-26':'추석 연휴',
-  '2026-10-03':'개천절',
-  '2026-10-05':'대체공휴일(개천절)',
-  '2026-10-09':'한글날',
-  '2026-12-25':'크리스마스',
-};
+/* ===== CONSTANTS ===== */
+const HOLIDAYS={'2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴','2026-03-01':'삼일절','2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일','2026-06-03':'지방선거','2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'크리스마스'};
 const COLORS=['#1a73e8','#e91e63','#9c27b0','#ff9800','#00897b','#f44336','#607d8b','#795548','#0097a7','#388e3c'];
 const TYPE_COLOR={휴가:'#fbbc04',교육:'#34a853',출장:'#4285f4',기타:'#ea4335'};
 const TYPE_TEXT={휴가:'#7a5a00',교육:'#1a5c2e',출장:'#1a3f7a',기타:'#7a1f1a'};
 const PRI_LABEL={high:'높음',mid:'중간',low:'낮음'};
-
-let members=[
-  {name:'윤찬호',role:'회계팀',color:'#1a73e8'},
-  {name:'김한솔',role:'회계팀',color:'#e91e63'},
-  {name:'차원진',role:'회계팀',color:'#9c27b0'},
-  {name:'이승우',role:'회계팀',color:'#ff9800'},
-  {name:'오민지',role:'회계팀',color:'#00897b'},
-  {name:'채성민',role:'회계팀',color:'#f44336'},
+const DEFAULT_MEMBERS=[
+  {name:'윤찬호',role:'회계팀',color:'#1a73e8'},{name:'김한솔',role:'회계팀',color:'#e91e63'},
+  {name:'차원진',role:'회계팀',color:'#9c27b0'},{name:'이승우',role:'회계팀',color:'#ff9800'},
+  {name:'오민지',role:'회계팀',color:'#00897b'},{name:'채성민',role:'회계팀',color:'#f44336'},
   {name:'조예진',role:'회계팀',color:'#607d8b'},
 ];
-let schedules=[];
-let tasks=[];
+
+/* ===== STATE ===== */
+let members=[],schedules=[],tasks=[];
 let curYear,curMonth,curTab='cal';
 const today=new Date();
 let editMemberIdx=null,selSchedIdx=null,selTaskIdx=null,stFilter='all',mmSelColor=COLORS[0],selAssignees=[];
 
+/* ===== UTILS ===== */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
 function p2(n){return String(n).padStart(2,'0')}
 function daysDiff(a,b){return Math.ceil((new Date(b)-new Date(a))/86400000)}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
 
-function initData(){
+/* ===== INIT ===== */
+async function initData(){
   curYear=today.getFullYear();curMonth=today.getMonth();
-  schedules=[];
-  tasks=[];
+  setStatus('데이터 불러오는 중…','info');
+  try{
+    const [mRaw,sRaw,tRaw]=await Promise.all([sbGet('members'),sbGet('schedules'),sbGet('tasks')]);
+    if(mRaw.length===0){
+      const ins=await sbPost('members',DEFAULT_MEMBERS);
+      members=ins.map(parseMember);
+    }else{
+      members=mRaw.map(parseMember);
+    }
+    schedules=sRaw.map(parseSched);
+    tasks=tRaw.map(parseTask);
+    setStatus('✓ 동기화 완료','ok');
+  }catch(e){setStatus('연결 오류: '+e.message,'err');}
+}
+function parseMember(m){return {id:m.id,name:m.name,role:m.role||'',color:m.color||'#1a73e8'};}
+function parseSched(s){return {id:s.id,memberId:s.member_id,type:s.type,start:s.start_date,end:s.end_date,memo:s.memo||''};}
+function parseTask(t){
+  let assignees=[];
+  try{assignees=JSON.parse(t.assignees||'[]');}catch(e){}
+  return {id:t.id,title:t.title,cat:t.cat,pri:t.pri,due:t.due_date,assignees,memo:t.memo||'',done:!!t.done};
 }
 
+/* ===== TAB ===== */
 function switchTab(t,el){
   curTab=t;
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(e=>e.classList.remove('active'));
   document.getElementById('panel-'+t).classList.add('active');
-  const labels={cal:'일정 추가',task:'Task 추가',members:'팀원 추가'};
-  document.getElementById('add-label').textContent=labels[t];
+  document.getElementById('add-label').textContent={cal:'일정 추가',task:'Task 추가',members:'팀원 추가'}[t];
   if(t==='cal'){renderSidebar();renderCal();}
   if(t==='task'){renderTaskFilters();renderTasks();}
   if(t==='members')renderMembersPanel();
 }
-
-const ICONS={
-  plus:'<svg class="ti" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-  calendar:'<svg class="ti" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/></svg>',
-  checkbox:'<svg class="ti" viewBox="0 0 24 24"><polyline points="9 11 12 14 20 6"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
-  users:'<svg class="ti" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>',
-  edit:'<svg class="ti" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
-  trash:'<svg class="ti" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
-  x:'<svg class="ti" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-  calendarEvent:'<svg class="ti" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>',
-  checkboxOff:'<svg class="ti" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>',
-};
-function icon(k){return ICONS[k]||''}
 function mainAdd(){
   if(curTab==='cal')openSchedModal();
   else if(curTab==='task')openTaskModal();
   else openMemberModal(null);
 }
 
-/* SIDEBAR */
+/* ===== SIDEBAR ===== */
 function renderSidebar(){
   document.getElementById('sidebar-members').innerHTML=members.map(m=>`
     <div class="member-item">
-      <div class="avatar" style="background:${m.color}">${m.name[0]}</div>
-      <span class="member-name">${m.name}</span>
+      <div class="avatar" style="background:${m.color}">${esc(m.name[0])}</div>
+      <span class="member-name">${esc(m.name)}</span>
     </div>`).join('');
 }
 
-/* CALENDAR */
+/* ===== CALENDAR ===== */
 function renderCal(){
-  document.getElementById('month-title').textContent=`${curYear}.${p2(curMonth+1)}`;
+  document.getElementById('month-title').textContent=curYear+'.'+p2(curMonth+1);
   const grid=document.getElementById('cal-grid');
   const first=new Date(curYear,curMonth,1);
   const last=new Date(curYear,curMonth+1,0);
   const sd=first.getDay();
   const cells=[];
-  for(let i=0;i<sd;i++){cells.push({date:fmtDate(new Date(curYear,curMonth,1-sd+i)),cur:false});}
+  for(let i=0;i<sd;i++)cells.push({date:fmtDate(new Date(curYear,curMonth,1-sd+i)),cur:false});
   for(let d=1;d<=last.getDate();d++)cells.push({date:fmtDate(new Date(curYear,curMonth,d)),cur:true});
   const rem=7-cells.length%7;
   if(rem<7)for(let i=1;i<=rem;i++)cells.push({date:fmtDate(new Date(curYear,curMonth+1,i)),cur:false});
   grid.innerHTML=cells.map(c=>{
     const isT=c.date===fmtDate(today);
     const dn=+c.date.split('-')[2];
-    const evs=schedules.filter(e=>e.start<=c.date&&e.end>=c.date);
-    const pills=evs.map(e=>{
+    const dow=new Date(c.date).getDay();
+    let dayClass='';
+    let holidayLabel='';
+    if(HOLIDAYS[c.date]){
+      dayClass=' holiday';
+      if(c.cur)holidayLabel='<div style="font-size:10px;color:#e53935;margin-bottom:2px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+HOLIDAYS[c.date]+'</div>';
+    }else if(dow===0){dayClass=' sun';}
+    else if(dow===6){dayClass=' sat';}
+    const pills=schedules.filter(e=>e.start<=c.date&&e.end>=c.date).map(e=>{
       const idx=schedules.indexOf(e);
       const m=members[e.memberId];
-      return `<div class="event-pill" style="background:${TYPE_COLOR[e.type]};color:${TYPE_TEXT[e.type]}" onclick="showSchedDetail(${idx})">${m?m.name[0]:'?'} ${e.type}</div>`;
+      return '<div class="event-pill" style="background:'+TYPE_COLOR[e.type]+';color:'+TYPE_TEXT[e.type]+'" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name[0]):'?')+' '+esc(e.type)+'</div>';
     }).join('');
     const taskPills=tasks.filter(t=>t.due===c.date).map(t=>{
       const idx=tasks.indexOf(t);
-      const overdue=!t.done&&t.due<fmtDate(today);
-      const bg=t.done?'#e0e0e0':overdue?'#fce8e6':'#e8f0fe';
-      const color=t.done?'#9e9e9e':overdue?'#c5221f':'#1a73e8';
-      return `<div class="event-pill" style="background:${bg};color:${color};border:1px solid ${t.done?'#bbb':overdue?'#f5c6c6':'#c5d8fb'}" onclick="showTaskDetail(${idx})">✦ ${t.title}</div>`;
+      const ov=!t.done&&t.due<fmtDate(today);
+      const bg=t.done?'#e0e0e0':ov?'#fce8e6':'#e8f0fe';
+      const cl=t.done?'#9e9e9e':ov?'#c5221f':'#1a73e8';
+      const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
+      return '<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
     }).join('');
-    return `<div class="day-cell${c.cur?'':' other-month-cell'}">
-      <div class="day-num${isT?' today':''}${c.cur?'':' other-month'}">${dn}</div>${pills}${taskPills}</div>`;
+    return '<div class="day-cell'+(c.cur?'':' other-month-cell')+'"><div class="day-num'+(isT?' today':'')+(c.cur?'':' other-month')+dayClass+'">'+dn+'</div>'+holidayLabel+pills+taskPills+'</div>';
   }).join('');
 }
 function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++;}else if(curMonth<0){curMonth=11;curYear--;}renderCal();}
 function goToday(){curYear=today.getFullYear();curMonth=today.getMonth();renderCal();}
 
+/* ===== SCHEDULE ===== */
 function openSchedModal(){
-  document.getElementById('s-member').innerHTML=members.map((m,i)=>`<option value="${i}">${m.name}</option>`).join('');
+  document.getElementById('s-member').innerHTML=members.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join('');
   document.getElementById('s-start').value=fmtDate(today);
   document.getElementById('s-end').value=fmtDate(today);
   document.getElementById('s-memo').value='';
   openModal('modal-sched');
 }
-function saveSched(){
+async function saveSched(){
   const memberId=+document.getElementById('s-member').value;
   const type=document.getElementById('s-type').value;
   const start=document.getElementById('s-start').value;
@@ -536,46 +430,55 @@ function saveSched(){
   const memo=document.getElementById('s-memo').value;
   if(!start||!end){alert('날짜를 입력해주세요');return;}
   if(start>end){alert('종료일이 시작일보다 빠릅니다');return;}
-  schedules.push({memberId,type,start,end,memo});
   closeModal('modal-sched');
-  const [y,mo]=start.split('-');curYear=+y;curMonth=+mo-1;
-  renderCal();
-  setStatus('Notion에 저장 중…');
-  saveSchedToNotion({memberId,type,start,end,memo}).then(()=>setStatus('✓ 저장됨','ok')).catch(()=>setStatus('저장 실패','err'));
+  setStatus('저장 중…','info');
+  try{
+    const res=await sbPost('schedules',{member_id:memberId,type,start_date:start,end_date:end,memo});
+    schedules.push(parseSched(res[0]));
+    const [y,mo]=start.split('-');curYear=+y;curMonth=+mo-1;
+    renderCal();
+    setStatus('✓ 저장됨','ok');
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
 }
 function showSchedDetail(idx){
   selSchedIdx=idx;
   const e=schedules[idx];
   const m=members[e.memberId];
-  document.getElementById('sd-content').innerHTML=`
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-      <div class="av-lg" style="background:${m?.color||'#999'}">${m?m.name[0]:'?'}</div>
-      <div>
-        <div style="font-size:16px;font-weight:600;color:#202124">${m?.name||'알 수 없음'}</div>
-        <div style="font-size:12px;color:#5f6368">${m?.role||''}</div>
-      </div>
-    </div>
-    <div style="display:flex;gap:7px;margin-bottom:12px">
-      <span class="task-badge" style="background:${TYPE_COLOR[e.type]};color:${TYPE_TEXT[e.type]};font-size:12px">${e.type}</span>
-    </div>
-    <div style="font-size:13px;color:#5f6368;margin-bottom:6px">${icon('calendarEvent')} ${e.start}${e.start!==e.end?' ~ '+e.end:''}</div>
-    ${e.memo?`<div style="font-size:13px;color:#202124;margin-top:10px;background:#f8f9fa;border-radius:7px;padding:10px">${e.memo}</div>`:''}`;
+  document.getElementById('sd-content').innerHTML=
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">'+
+    '<div class="av-lg" style="background:'+(m?.color||'#999')+'">'+(m?esc(m.name[0]):'?')+'</div>'+
+    '<div><div style="font-size:16px;font-weight:600;color:#202124">'+esc(m?.name||'알 수 없음')+'</div>'+
+    '<div style="font-size:12px;color:#5f6368">'+esc(m?.role||'')+'</div></div></div>'+
+    '<div style="margin-bottom:12px"><span class="task-badge" style="background:'+TYPE_COLOR[e.type]+';color:'+TYPE_TEXT[e.type]+'">'+esc(e.type)+'</span></div>'+
+    '<div style="font-size:13px;color:#5f6368;margin-bottom:6px">📅 '+e.start+(e.start!==e.end?' ~ '+e.end:'')+'</div>'+
+    (e.memo?'<div style="font-size:13px;color:#202124;margin-top:10px;background:#f8f9fa;border-radius:7px;padding:10px">'+esc(e.memo)+'</div>':'');
   openModal('modal-sdetail');
 }
-function deleteSched(){if(selSchedIdx===null)return;schedules.splice(selSchedIdx,1);closeModal('modal-sdetail');renderCal();}
+async function deleteSched(){
+  if(selSchedIdx===null)return;
+  const id=schedules[selSchedIdx].id;
+  closeModal('modal-sdetail');
+  setStatus('삭제 중…','info');
+  try{
+    await sbDel('schedules',id);
+    schedules.splice(selSchedIdx,1);
+    renderCal();
+    setStatus('✓ 삭제됨','ok');
+  }catch(e){setStatus('삭제 실패','err');}
+}
 
-/* TASK */
+/* ===== TASK ===== */
 function renderTaskFilters(){
   const sel=document.getElementById('task-filter-member');
   const cur=sel.value;
-  sel.innerHTML='<option value="">전체 팀원</option>'+members.map((m,i)=>`<option value="${i}">${m.name}</option>`).join('');
+  sel.innerHTML='<option value="">전체 팀원</option>'+members.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join('');
   if(members.some((_,i)=>String(i)===cur))sel.value=cur;
 }
 function setStFilter(v,btn){stFilter=v;document.querySelectorAll('.st-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTasks();}
 function renderTasks(){
   const fm=document.getElementById('task-filter-member').value;
   const fc=document.getElementById('task-filter-cat').value;
-  let list=tasks.filter(t=>{
+  const list=tasks.filter(t=>{
     if(fm!==''&&!t.assignees.includes(+fm))return false;
     if(fc!==''&&t.cat!==fc)return false;
     if(stFilter==='todo'&&t.done)return false;
@@ -583,64 +486,74 @@ function renderTasks(){
     return true;
   });
   const el=document.getElementById('task-list');
-  if(!list.length){el.innerHTML=`<div class="empty-state">${icon('checkboxOff')}<br>해당하는 Task가 없습니다</div>`;return;}
+  if(!list.length){el.innerHTML='<div class="empty-state">☑️<br>해당하는 Task가 없습니다</div>';return;}
   el.innerHTML=list.map(t=>{
     const idx=tasks.indexOf(t);
     const now=fmtDate(today);
-    const overdue=!t.done&&t.due<now;
-    const diff=daysDiff(now,t.due);
-    const dueLabel=overdue?`D+${daysDiff(t.due,now)}`:(t.due===now?'D-day':`D-${diff}`);
-    const asses=t.assignees.map(ai=>`<div class="ass-av" style="background:${members[ai]?.color||'#999'}" title="${members[ai]?.name||''}">${members[ai]?.name[0]||'?'}</div>`).join('');
-    return `<div class="task-card priority-${t.pri}${t.done?' done-card':''}" onclick="showTaskDetail(${idx})">
-      <div class="task-top">
-        <div class="task-check${t.done?' checked':''}" onclick="event.stopPropagation();toggleTask(${idx})"></div>
-        <div class="task-title${t.done?' done-text':''}">${t.title}</div>
-        <button onclick="event.stopPropagation();confirmDeleteTask(${idx})" aria-label="삭제" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;border-radius:4px;line-height:1;flex-shrink:0" onmouseover="this.style.color='#ea4335';this.style.background='#fce8e6'" onmouseout="this.style.color='#bbb';this.style.background='none'">${icon('x')}</button>
-      </div>
-      <div class="task-meta">
-        <span class="task-badge badge-cat">${t.cat}</span>
-        <span class="task-badge badge-pri-${t.pri}">${PRI_LABEL[t.pri]}</span>
-        <span class="task-badge ${overdue?'badge-due':'badge-due ok'}">${t.due} (${dueLabel})</span>
-        <div class="assignees">${asses}</div>
-      </div>
-    </div>`;
+    const ov=!t.done&&t.due<now;
+    const dl=ov?'D+'+daysDiff(t.due,now):(t.due===now?'D-day':'D-'+daysDiff(now,t.due));
+    const asses=t.assignees.map(ai=>'<div class="ass-av" style="background:'+(members[ai]?.color||'#999')+'" title="'+esc(members[ai]?.name||'')+'">'+esc(members[ai]?.name?.[0]||'?')+'</div>').join('');
+    return '<div class="task-card priority-'+t.pri+(t.done?' done-card':'')+'" onclick="showTaskDetail('+idx+')">'+
+      '<div class="task-top">'+
+      '<div class="task-check'+(t.done?' checked':'')+'" onclick="event.stopPropagation();toggleTask('+idx+')"></div>'+
+      '<div class="task-title'+(t.done?' done-text':'')+'">'+esc(t.title)+'</div>'+
+      '<button onclick="event.stopPropagation();confirmDeleteTask('+idx+')" style="background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;border-radius:4px;line-height:1;flex-shrink:0;font-size:16px" onmouseover="this.style.color=\'#ea4335\';this.style.background=\'#fce8e6\'" onmouseout="this.style.color=\'#bbb\';this.style.background=\'none\'">✕</button>'+
+      '</div>'+
+      '<div class="task-meta">'+
+      '<span class="task-badge badge-cat">'+esc(t.cat)+'</span>'+
+      '<span class="task-badge badge-pri-'+t.pri+'">'+PRI_LABEL[t.pri]+'</span>'+
+      '<span class="task-badge '+(ov?'badge-due':'badge-due ok')+'">'+t.due+' ('+dl+')</span>'+
+      '<div class="assignees">'+asses+'</div>'+
+      '</div></div>';
   }).join('');
 }
-function toggleTask(idx){tasks[idx].done=!tasks[idx].done;renderTasks();}
+async function toggleTask(idx){
+  tasks[idx].done=!tasks[idx].done;
+  renderTasks();renderCal();
+  try{await sbPatch('tasks',tasks[idx].id,{done:tasks[idx].done});}catch(e){}
+}
+async function confirmDeleteTask(idx){
+  if(!confirm('"'+tasks[idx].title+'" Task를 삭제하시겠습니까?'))return;
+  const id=tasks[idx].id;
+  tasks.splice(idx,1);
+  renderTasks();renderCal();
+  try{await sbDel('tasks',id);}catch(e){}
+}
 function showTaskDetail(idx){
   selTaskIdx=idx;
   const t=tasks[idx];
   const now=fmtDate(today);
-  const overdue=!t.done&&t.due<now;
-  const asses=t.assignees.map(ai=>`
-    <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-      <div class="ass-av" style="background:${members[ai]?.color||'#999'};width:24px;height:24px;font-size:10px">${members[ai]?.name[0]||'?'}</div>
-      <span style="font-size:13px;color:#202124">${members[ai]?.name||''}</span>
-    </div>`).join('');
-  document.getElementById('td-content').innerHTML=`
-    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
-      <span class="task-badge badge-cat">${t.cat}</span>
-      <span class="task-badge badge-pri-${t.pri}">${PRI_LABEL[t.pri]}</span>
-      <span class="task-badge ${overdue?'badge-due':'badge-due ok'}">${t.done?'완료':overdue?'기한 초과':'진행 중'}</span>
-    </div>
-    <div style="font-size:17px;font-weight:600;color:#202124;margin-bottom:14px;line-height:1.4">${t.title}</div>
-    <div style="font-size:12px;font-weight:500;color:#80868b;margin-bottom:5px">데드라인</div>
-    <div style="font-size:14px;color:#202124;margin-bottom:14px">${t.due}</div>
-    <div style="font-size:12px;font-weight:500;color:#80868b;margin-bottom:7px">담당자</div>
-    ${asses}
-    ${t.memo?`<div style="margin-top:12px;font-size:13px;color:#202124;background:#f8f9fa;border-radius:8px;padding:12px;line-height:1.5">${t.memo}</div>`:''}`;
+  const ov=!t.done&&t.due<now;
+  const asses=t.assignees.map(ai=>
+    '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'+
+    '<div class="ass-av" style="background:'+(members[ai]?.color||'#999')+';width:24px;height:24px;font-size:10px">'+esc(members[ai]?.name?.[0]||'?')+'</div>'+
+    '<span style="font-size:13px;color:#202124">'+esc(members[ai]?.name||'')+'</span></div>').join('');
+  document.getElementById('td-content').innerHTML=
+    '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">'+
+    '<span class="task-badge badge-cat">'+esc(t.cat)+'</span>'+
+    '<span class="task-badge badge-pri-'+t.pri+'">'+PRI_LABEL[t.pri]+'</span>'+
+    '<span class="task-badge '+(ov?'badge-due':'badge-due ok')+'">'+(t.done?'완료':ov?'기한 초과':'진행 중')+'</span></div>'+
+    '<div style="font-size:17px;font-weight:600;color:#202124;margin-bottom:14px;line-height:1.4">'+esc(t.title)+'</div>'+
+    '<div style="font-size:12px;font-weight:500;color:#80868b;margin-bottom:5px">데드라인</div>'+
+    '<div style="font-size:14px;color:#202124;margin-bottom:14px">'+t.due+'</div>'+
+    '<div style="font-size:12px;font-weight:500;color:#80868b;margin-bottom:7px">담당자</div>'+asses+
+    (t.memo?'<div style="margin-top:12px;font-size:13px;color:#202124;background:#f8f9fa;border-radius:8px;padding:12px;line-height:1.5">'+esc(t.memo)+'</div>':'');
   openModal('modal-tdetail');
 }
-function confirmDeleteTask(idx){
-  if(confirm(`"${tasks[idx].title}" Task를 삭제하시겠습니까?`)){tasks.splice(idx,1);renderTasks();}
+async function deleteTask(){
+  if(selTaskIdx===null)return;
+  const id=tasks[selTaskIdx].id;
+  tasks.splice(selTaskIdx,1);
+  closeModal('modal-tdetail');
+  renderTasks();renderCal();
+  try{await sbDel('tasks',id);}catch(e){}
 }
-function deleteTask(){if(selTaskIdx===null)return;tasks.splice(selTaskIdx,1);closeModal('modal-tdetail');renderTasks();}
 function openTaskModal(){
   document.getElementById('t-title').value='';
   document.getElementById('t-memo').value='';
   document.getElementById('t-due').value=fmtDate(today);
   selAssignees=[];
-  document.getElementById('t-assignees').innerHTML=members.map((m,i)=>`<div class="ms-chip" id="chip-${i}" onclick="toggleAssignee(${i})">${m.name}</div>`).join('');
+  document.getElementById('t-assignees').innerHTML=members.map((m,i)=>'<div class="ms-chip" id="chip-'+i+'" onclick="toggleAssignee('+i+')">'+esc(m.name)+'</div>').join('');
   openModal('modal-task');
 }
 function toggleAssignee(i){
@@ -648,32 +561,32 @@ function toggleAssignee(i){
   if(p===-1)selAssignees.push(i);else selAssignees.splice(p,1);
   members.forEach((_,j)=>{const c=document.getElementById('chip-'+j);if(c)c.classList.toggle('sel',selAssignees.includes(j));});
 }
-function saveTask(){
+async function saveSched_task(){
   const title=document.getElementById('t-title').value.trim();
   if(!title){alert('제목을 입력해주세요');return;}
   const due=document.getElementById('t-due').value;
   if(!due){alert('데드라인을 입력해주세요');return;}
-  tasks.push({title,cat:document.getElementById('t-cat').value,pri:document.getElementById('t-pri').value,due,assignees:[...selAssignees],memo:document.getElementById('t-memo').value,done:false});
-  closeModal('modal-task');renderTasks();
-  const newTask=tasks[tasks.length-1];
-  setStatus('Notion에 저장 중…');
-  saveTaskToNotion(newTask).then(()=>setStatus('✓ 저장됨','ok')).catch(()=>setStatus('저장 실패','err'));
+  closeModal('modal-task');
+  setStatus('저장 중…','info');
+  try{
+    const res=await sbPost('tasks',{title,cat:document.getElementById('t-cat').value,pri:document.getElementById('t-pri').value,due_date:due,assignees:JSON.stringify(selAssignees),memo:document.getElementById('t-memo').value,done:false});
+    tasks.push(parseTask(res[0]));
+    renderTasks();renderCal();
+    setStatus('✓ 저장됨','ok');
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
 }
 
-/* MEMBERS */
+/* ===== MEMBERS ===== */
 function renderMembersPanel(){
   document.getElementById('members-grid').innerHTML=
-    members.map((m,i)=>`
-      <div class="member-card">
-        <div class="av-lg" style="background:${m.color}">${m.name[0]}</div>
-        <div class="member-info">
-          <div class="mn">${m.name}</div>
-          <div class="mr">${m.role||'직책 미입력'}</div>
-        </div>
-        <button class="icon-action" onclick="openMemberModal(${i})" aria-label="편집">${icon('edit')}</button>
-        <button class="icon-action danger" onclick="removeMember(${i})" aria-label="삭제">${icon('trash')}</button>
-      </div>`).join('')+
-    `<div class="add-member-card" onclick="openMemberModal(null)">${icon('plus')} 팀원 추가</div>`;
+    members.map((m,i)=>
+      '<div class="member-card">'+
+      '<div class="av-lg" style="background:'+m.color+'">'+esc(m.name[0])+'</div>'+
+      '<div class="member-info"><div class="mn">'+esc(m.name)+'</div><div class="mr">'+esc(m.role||'직책 미입력')+'</div></div>'+
+      '<button class="icon-action" onclick="openMemberModal('+i+')" title="편집">✏️</button>'+
+      '<button class="icon-action danger" onclick="removeMember('+i+')" title="삭제">🗑️</button>'+
+      '</div>').join('')+
+    '<div class="add-member-card" onclick="openMemberModal(null)">+ 팀원 추가</div>';
 }
 function openMemberModal(idx){
   editMemberIdx=idx;
@@ -681,8 +594,7 @@ function openMemberModal(idx){
   document.getElementById('mm-title').textContent=idx!==null?'팀원 편집':'팀원 추가';
   document.getElementById('mm-name').value=idx!==null?members[idx].name:'';
   document.getElementById('mm-role').value=idx!==null?(members[idx].role||''):'';
-  document.getElementById('mm-swatches').innerHTML=COLORS.map(c=>`
-    <div class="swatch${c===mmSelColor?' sel':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`).join('');
+  document.getElementById('mm-swatches').innerHTML=COLORS.map(c=>'<div class="swatch'+(c===mmSelColor?' sel':'')+'" style="background:'+c+'" onclick="selectColor(\''+c+'\',this)"></div>').join('');
   openModal('modal-member');
 }
 function selectColor(c,el){
@@ -690,36 +602,36 @@ function selectColor(c,el){
   document.querySelectorAll('#mm-swatches .swatch').forEach(s=>s.classList.remove('sel'));
   el.classList.add('sel');
 }
-function saveMember(){
+async function saveMember(){
   const name=document.getElementById('mm-name').value.trim();
   const role=document.getElementById('mm-role').value.trim();
   if(!name){alert('이름을 입력해주세요');return;}
-  if(editMemberIdx!==null){members[editMemberIdx]={...members[editMemberIdx],name,role,color:mmSelColor};}
-  else{
-    const newMember={name,role,color:mmSelColor};
-    members.push(newMember);
-    setStatus('Notion에 저장 중…');
-    saveMemberToNotion(newMember).then(()=>setStatus('✓ 저장됨','ok')).catch(()=>setStatus('저장 실패','err'));
-  }
-  closeModal('modal-member');renderMembersPanel();renderSidebar();
+  closeModal('modal-member');
+  setStatus('저장 중…','info');
+  try{
+    if(editMemberIdx!==null){
+      await sbPatch('members',members[editMemberIdx].id,{name,role,color:mmSelColor});
+      members[editMemberIdx]={...members[editMemberIdx],name,role,color:mmSelColor};
+    }else{
+      const res=await sbPost('members',{name,role,color:mmSelColor});
+      members.push(parseMember(res[0]));
+    }
+    setStatus('✓ 저장됨','ok');
+    renderMembersPanel();renderSidebar();
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
 }
-function removeMember(idx){
-  if(!confirm(`"${members[idx].name}"을(를) 삭제하시겠습니까?`))return;
+async function removeMember(idx){
+  if(!confirm('"'+members[idx].name+'"을(를) 삭제하시겠습니까?'))return;
+  const id=members[idx].id;
   schedules=schedules.filter(s=>s.memberId!==idx).map(s=>({...s,memberId:s.memberId>idx?s.memberId-1:s.memberId}));
   tasks=tasks.map(t=>({...t,assignees:t.assignees.filter(a=>a!==idx).map(a=>a>idx?a-1:a)}));
   members.splice(idx,1);
+  try{await sbDel('members',id);}catch(e){}
   renderMembersPanel();renderSidebar();
 }
 
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
-
-initData();renderSidebar();renderCal();
-document.getElementById('add-icon').innerHTML=icon('plus');
-document.getElementById('tab-cal').innerHTML=icon('calendar')+' 일정';
-document.getElementById('tab-task').innerHTML=icon('checkbox')+' Task';
-document.getElementById('tab-members').innerHTML=icon('users')+' 팀원 관리';
+/* ===== START ===== */
+initData().then(()=>{renderSidebar();renderCal();});
 </script>
 </body>
 </html>
