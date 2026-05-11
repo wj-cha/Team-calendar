@@ -390,12 +390,13 @@ function renderCal(){
     if(HOLIDAYS[c.date]){dayClass=' holiday';if(c.cur)holidayLabel='<div style="font-size:10px;color:#e53935;margin-bottom:2px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+HOLIDAYS[c.date]+'</div>';}
     else if(dow===0)dayClass=' sun';
     else if(dow===6)dayClass=' sat';
-    const schedPills=schedules.filter(e=>e.start<=c.date&&e.end>=c.date).map(e=>{
+    const isWeekendOrHoliday=(dow===0||dow===6||!!HOLIDAYS[c.date]);
+    const schedPills=isWeekendOrHoliday?'':schedules.filter(e=>e.start<=c.date&&e.end>=c.date).map(e=>{
       const idx=schedules.indexOf(e);const m=members[e.memberId];const bg=m?.color||'#999';
       return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
     let taskHtml='';
-    tasks.forEach((t,idx)=>{
+    if(!isWeekendOrHoliday){tasks.forEach((t,idx)=>{
       if(t.rangeStart&&t.rangeEnd&&c.date>=t.rangeStart&&c.date<=t.rangeEnd){
         const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
         const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
@@ -408,7 +409,7 @@ function renderCal(){
         const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
         taskHtml+='<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
       }
-    });
+    });}
     return '<div class="day-cell'+(c.cur?'':' other-month-cell')+'"><div class="day-num'+(isT?' today':'')+(c.cur?'':' other-month')+dayClass+'">'+dn+'</div>'+holidayLabel+schedPills+taskHtml+'</div>';
   }).join('');
 }
