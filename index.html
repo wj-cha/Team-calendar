@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.2.1</title>
+<title>TeamCal v1.3</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -20,7 +20,13 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:500}
 .panel{display:none}.panel.active{display:block}
 .cal-main{display:flex}
-.sidebar{width:190px;border-right:1px solid #dadce0;padding:12px 10px;flex-shrink:0}
+.sidebar{width:220px;border-right:1px solid #dadce0;padding:12px 10px;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 120px)}
+.cal-filter-item{display:flex;align-items:center;gap:7px;padding:3px 8px;border-radius:6px;cursor:pointer;margin-bottom:1px}
+.cal-filter-item:hover{background:#f1f3f4}
+.cal-filter-item input[type=checkbox]{width:14px;height:14px;accent-color:#1a73e8;cursor:pointer;flex-shrink:0}
+.cal-filter-item .fi-label{font-size:12px;color:#202124;flex:1}
+.sid-filter-reset{width:100%;background:none;border:1px solid #dadce0;border-radius:6px;padding:4px;font-size:11px;color:#5f6368;cursor:pointer;margin-top:6px}
+.sid-filter-reset:hover{background:#f1f3f4;color:#1a73e8;border-color:#1a73e8}
 .sid-ctrl{display:flex;align-items:center;gap:4px;padding:4px 6px;margin-bottom:6px}
 .sid-nav{background:none;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;color:#5f6368;display:flex;align-items:center;justify-content:center}
 .sid-nav:hover{background:#f1f3f4}
@@ -135,7 +141,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.2.1</span>
+    <span class="version">v1.3</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -154,8 +160,11 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
           <button class="sid-nav" onclick="changeMonth(1)">&#8250;</button>
         </div>
         <button class="today-btn" onclick="goToday()">오늘</button>
-        <div class="sidebar-sec">팀원</div>
+        <div class="sidebar-sec">팀원 필터</div>
         <div id="sidebar-members"></div>
+        <div class="sidebar-sec" style="margin-top:14px">카테고리 필터</div>
+        <div id="sidebar-cats"></div>
+        <button class="sid-filter-reset" onclick="resetCalFilter()">↺ 필터 초기화</button>
       </div>
       <div class="cal-wrap">
         <div class="cal-header">
@@ -314,6 +323,9 @@ let members=[],schedules=[],tasks=[];
 let curYear,curMonth,curTab='cal';
 const today=new Date();
 let editMemberIdx=null,selSchedIdx=null,selTaskIdx=null,stFilter='all',mmSelColor=COLORS[0],selAssignees=[];
+/* 캘린더 Task 필터 상태: null = 전체 선택 */
+let calFilterMembers=null; // null=전체, Set of indices
+let calFilterCats=null;    // null=전체, Set of cat strings
 
 /* ===== UTILS ===== */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -363,11 +375,40 @@ function mainAdd(){
 
 /* ===== SIDEBAR ===== */
 function renderSidebar(){
-  document.getElementById('sidebar-members').innerHTML=members.map(m=>`
-    <div class="member-item">
-      <div class="avatar" style="background:${m.color}">${esc(m.name[0])}</div>
-      <span class="member-name">${esc(m.name)}</span>
-    </div>`).join('');
+  // 팀원 체크박스
+  document.getElementById('sidebar-members').innerHTML=members.map((m,i)=>{
+    const checked=calFilterMembers===null||calFilterMembers.has(i);
+    return `<label class="cal-filter-item">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleCalMemberFilter(${i},this.checked)">
+      <div class="avatar" style="background:${m.color};width:20px;height:20px;font-size:9px">${esc(m.name[0])}</div>
+      <span class="fi-label">${esc(m.name)}</span>
+    </label>`;
+  }).join('');
+  // 카테고리 체크박스
+  document.getElementById('sidebar-cats').innerHTML=CATS.map(cat=>{
+    const checked=calFilterCats===null||calFilterCats.has(cat);
+    return `<label class="cal-filter-item">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleCalCatFilter('${cat}',this.checked)">
+      <span class="fi-label">${esc(cat)}</span>
+    </label>`;
+  }).join('');
+}
+
+function toggleCalMemberFilter(idx,checked){
+  if(calFilterMembers===null) calFilterMembers=new Set(members.map((_,i)=>i));
+  if(checked) calFilterMembers.add(idx); else calFilterMembers.delete(idx);
+  if(calFilterMembers.size===members.length) calFilterMembers=null; // 전체 선택 시 null로 초기화
+  renderCal();
+}
+function toggleCalCatFilter(cat,checked){
+  if(calFilterCats===null) calFilterCats=new Set(CATS);
+  if(checked) calFilterCats.add(cat); else calFilterCats.delete(cat);
+  if(calFilterCats.size===CATS.length) calFilterCats=null;
+  renderCal();
+}
+function resetCalFilter(){
+  calFilterMembers=null;calFilterCats=null;
+  renderSidebar();renderCal();
 }
 
 /* ===== CALENDAR ===== */
@@ -391,12 +432,20 @@ function renderCal(){
     else if(dow===0)dayClass=' sun';
     else if(dow===6)dayClass=' sat';
     const isWeekendOrHoliday=(dow===0||dow===6||!!HOLIDAYS[c.date]);
-    const schedPills=isWeekendOrHoliday?'':schedules.filter(e=>e.start<=c.date&&e.end>=c.date).map(e=>{
+    const schedPills=isWeekendOrHoliday?'':schedules.filter(e=>{
+      if(e.start>c.date||e.end<c.date)return false;
+      /* 팀원 필터 적용 */
+      return calFilterMembers===null||calFilterMembers.has(e.memberId);
+    }).map(e=>{
       const idx=schedules.indexOf(e);const m=members[e.memberId];const bg=m?.color||'#999';
       return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
     let taskHtml='';
     if(!isWeekendOrHoliday){tasks.forEach((t,idx)=>{
+      /* 캘린더 필터 적용 */
+      const memberMatch=calFilterMembers===null||t.assignees.some(ai=>calFilterMembers.has(ai));
+      const catMatch=calFilterCats===null||calFilterCats.has(t.cat);
+      if(!memberMatch||!catMatch)return;
       if(t.rangeStart&&t.rangeEnd&&c.date>=t.rangeStart&&c.date<=t.rangeEnd){
         const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
         const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
