@@ -423,6 +423,7 @@ function renderCal(){
   for(let d=1;d<=last.getDate();d++)cells.push({date:fmtDate(new Date(curYear,curMonth,d)),cur:true});
   const rem=7-cells.length%7;
   if(rem<7)for(let i=1;i<=rem;i++)cells.push({date:fmtDate(new Date(curYear,curMonth+1,i)),cur:false});
+
   grid.innerHTML=cells.map(c=>{
     const isT=c.date===fmtDate(today);
     const dn=+c.date.split('-')[2];
@@ -432,33 +433,39 @@ function renderCal(){
     else if(dow===0)dayClass=' sun';
     else if(dow===6)dayClass=' sat';
     const isWeekendOrHoliday=(dow===0||dow===6||!!HOLIDAYS[c.date]);
+
+    /* 일정 pills */
     const schedPills=isWeekendOrHoliday?'':schedules.filter(e=>{
       if(e.start>c.date||e.end<c.date)return false;
-      /* 팀원 필터 적용 */
       return calFilterMembers===null||calFilterMembers.has(e.memberId);
     }).map(e=>{
-      const idx=schedules.indexOf(e);const m=members[e.memberId];const bg=m?.color||'#999';
-      return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+idx+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
+      const si=schedules.indexOf(e);const m=members[e.memberId];const bg=m?.color||'#999';
+      return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+si+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
+
     let taskHtml='';
-    if(!isWeekendOrHoliday){tasks.forEach((t,idx)=>{
-      /* 캘린더 필터 적용 */
-      const memberMatch=calFilterMembers===null||t.assignees.some(ai=>calFilterMembers.has(ai));
-      const catMatch=calFilterCats===null||calFilterCats.has(t.cat);
-      if(!memberMatch||!catMatch)return;
-      if(t.rangeStart&&t.rangeEnd&&c.date>=t.rangeStart&&c.date<=t.rangeEnd){
-        const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
-        const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
-        taskHtml+='<div class="task-pill-range" style="background:'+RANGE_BG+';color:'+RANGE_CL+';border:1px solid '+RANGE_BR+';opacity:'+(t.done?'.55':'1')+'" onclick="showTaskDetail('+idx+')">'+label+'</div>';
-      }
-      if(t.due===c.date){
-        const ov=!t.done&&t.due<fmtDate(today);
-        const bg=t.done?'#e0e0e0':ov?'#fce8e6':'#e8f0fe';
-        const cl=t.done?'#9e9e9e':ov?'#c5221f':'#1a73e8';
-        const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
-        taskHtml+='<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
-      }
-    });}
+    if(!isWeekendOrHoliday){
+      tasks.forEach((t,idx)=>{
+        const mOk=calFilterMembers===null||t.assignees.some(ai=>calFilterMembers.has(ai));
+        const cOk=calFilterCats===null||calFilterCats.has(t.cat);
+        if(!mOk||!cOk)return;
+        /* 기간 pill */
+        if(t.rangeStart&&t.rangeEnd&&c.date>=t.rangeStart&&c.date<=t.rangeEnd){
+          const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
+          const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
+          taskHtml+='<div class="task-pill-range" style="background:'+RANGE_BG+';color:'+RANGE_CL+';border:1px solid '+RANGE_BR+';opacity:'+(t.done?'.55':'1')+'" onclick="showTaskDetail('+idx+')">'+label+'</div>';
+        }
+        /* 데드라인 pill — 기간 있으면 생략 */
+        if(t.due===c.date&&!(t.rangeStart&&t.rangeEnd)){
+          const ov=!t.done&&t.due<fmtDate(today);
+          const bg=t.done?'#e0e0e0':ov?'#fce8e6':'#e8f0fe';
+          const cl=t.done?'#9e9e9e':ov?'#c5221f':'#1a73e8';
+          const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
+          taskHtml+='<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
+        }
+      });
+    }
+
     return '<div class="day-cell'+(c.cur?'':' other-month-cell')+'"><div class="day-num'+(isT?' today':'')+(c.cur?'':' other-month')+dayClass+'">'+dn+'</div>'+holidayLabel+schedPills+taskHtml+'</div>';
   }).join('');
 }
