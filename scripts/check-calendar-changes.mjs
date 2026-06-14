@@ -1,19 +1,18 @@
 #!/usr/bin/env node
 /*
- * Team-calendar 변경 감지 & 메일 알림 (매일 1회 폴링)
+ * Team-calendar 변경 감지 (매일 1회 폴링)
  * --------------------------------------------------------------
  * 동작:
  *  1. Supabase REST API 로 members / schedules / tasks 전체 조회
  *  2. 직전 스냅샷(scripts/snapshot.json)과 비교해 추가/수정/삭제 추출
- *  3. 변경이 있으면 Resend API 로 알림 메일 발송
+ *  3. 변경 내역을 표준출력으로 요약 (루틴이 이 출력을 메일 알림으로 전송)
  *  4. 스냅샷 파일 갱신 (루틴이 이후 커밋 & 푸시)
  *
- * 환경변수:
- *  RESEND_API_KEY  (필수: 메일 발송용. 없으면 dry-run 으로 콘솔 출력만)
- *  MAIL_TO         (기본 wjcha@cswind.com)
- *  MAIL_FROM       (기본 onboarding@resend.dev — 도메인 인증 전 테스트용)
- *  SUPABASE_URL    (기본값은 index.html 의 공개 URL)
- *  SUPABASE_KEY    (기본값은 index.html 의 공개 anon key)
+ * 메일 발송은 Claude Routine 의 "알림 → 이메일"(계정 이메일로 전송) 기능이 담당합니다.
+ * 따라서 이 스크립트는 변경 내역을 출력만 하고, 별도 메일 발송은 하지 않습니다.
+ *
+ * 환경변수(선택):
+ *  SUPABASE_URL / SUPABASE_KEY  (미설정 시 index.html 의 공개 값 사용)
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
@@ -26,10 +25,6 @@ const SNAPSHOT_PATH = join(__dirname, 'snapshot.json');
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://bcxvunprnbhhvgpbajvp.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeHZ1bnBybmJoaHZncGJhanZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTEzMzMsImV4cCI6MjA5Mzk2NzMzM30.NtXnwMyV3afOi2a7jtpykBal-kKGMV1PagYJpibmmWY';
-
-const MAIL_TO = process.env.MAIL_TO || 'wjcha@cswind.com';
-const MAIL_FROM = process.env.MAIL_FROM || 'onboarding@resend.dev';
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
 const TABLES = ['members', 'schedules', 'tasks'];
 
@@ -121,47 +116,6 @@ function renderText(diffs, memberName) {
   return lines.join('\n');
 }
 
-function renderHtml(diffs, memberName) {
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const blocks = [];
-  for (const tbl of TABLES) {
-    const d = diffs[tbl];
-    if (!d.added.length && !d.removed.length && !d.modified.length) continue;
-    const items = [];
-    for (const row of d.added)
-      items.push(`<li><b style="color:#137333">추가</b> ${esc(describeRow(tbl, row, memberName))}</li>`);
-    for (const row of d.removed)
-      items.push(`<li><b style="color:#c5221f">삭제</b> ${esc(describeRow(tbl, row, memberName))}</li>`);
-    for (const m of d.modified) {
-      const ch = m.changes
-        .map((c) => `<div style="margin-left:16px;color:#555">· ${esc(FIELD_LABEL[c.field] || c.field)}: ${esc(c.from)} → ${esc(c.to)}</div>`)
-        .join('');
-      items.push(`<li><b style="color:#1a73e8">수정</b> ${esc(describeRow(tbl, m.row, memberName))}${ch}</li>`);
-    }
-    blocks.push(`<h3 style="margin:18px 0 6px">${TABLE_LABEL[tbl]}</h3><ul style="margin:0;padding-left:18px;line-height:1.7">${items.join('')}</ul>`);
-  }
-  return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;color:#202124">
-    <h2 style="margin:0 0 4px">📅 팀 캘린더 변경 알림</h2>
-    <div style="color:#888;font-size:12px">${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</div>
-    ${blocks.join('')}
-  </div>`;
-}
-
-async function sendEmail(subject, text, html) {
-  if (!RESEND_API_KEY) {
-    console.log('[dry-run] RESEND_API_KEY 미설정 — 메일 발송 생략. 아래는 본문 미리보기:');
-    console.log(text);
-    return;
-  }
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: MAIL_FROM, to: [MAIL_TO], subject, text, html }),
-  });
-  if (!r.ok) throw new Error(`Resend 발송 실패 (${r.status}): ${await r.text()}`);
-  console.log(`메일 발송 완료 → ${MAIL_TO}`);
-}
-
 async function loadSnapshot() {
   try {
     return JSON.parse(await readFile(SNAPSHOT_PATH, 'utf8'));
@@ -181,7 +135,7 @@ async function main() {
 
   if (!prev) {
     await writeFile(SNAPSHOT_PATH, JSON.stringify(current, null, 2));
-    console.log('첫 실행: 베이스라인 스냅샷을 생성했습니다. (메일 발송 없음)');
+    console.log('NO_CHANGES: 첫 실행 — 베이스라인 스냅샷을 생성했습니다.');
     return;
   }
 
@@ -193,16 +147,15 @@ async function main() {
   }
 
   if (changed === 0) {
-    console.log('변경 사항 없음.');
+    console.log('NO_CHANGES: 변경 사항 없음.');
     return;
   }
 
-  const text = `팀 캘린더에 ${changed}건의 변경이 있었습니다.\n${renderText(diffs, memberName)}`;
-  const html = renderHtml(diffs, memberName);
-  await sendEmail(`📅 팀 캘린더 변경 ${changed}건`, text, html);
+  // 루틴이 이 출력을 읽어 이메일 알림 본문으로 사용합니다.
+  console.log(`CHANGES: 팀 캘린더에 ${changed}건의 변경이 있었습니다.`);
+  console.log(renderText(diffs, memberName));
 
   await writeFile(SNAPSHOT_PATH, JSON.stringify(current, null, 2));
-  console.log(`완료: ${changed}건 알림. 스냅샷 갱신됨.`);
 }
 
 main().catch((e) => {
