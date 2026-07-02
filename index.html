@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.4</title>
+<title>TeamCal v1.5</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -141,7 +141,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.4</span>
+    <span class="version">v1.5</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -305,7 +305,8 @@ function setStatus(msg,type){
 }
 
 /* ===== CONSTANTS ===== */
-const HOLIDAYS={'2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴','2026-03-01':'삼일절','2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일','2026-06-03':'지방선거','2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'크리스마스'};
+/* 공휴일: DB(holidays 테이블)에서 로드. 아래는 로드 실패 시 fallback (★ v1.5) */
+let HOLIDAYS={'2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴','2026-03-01':'삼일절','2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일','2026-06-03':'지방선거','2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'크리스마스'};
 const COLORS=['#1a73e8','#e91e63','#9c27b0','#ff9800','#00897b','#f44336','#607d8b','#795548','#0097a7','#388e3c'];
 const TYPE_COLOR={휴가:'#fbbc04',교육:'#34a853',출장:'#4285f4',기타:'#ea4335'};
 const TYPE_TEXT={휴가:'#7a5a00',교육:'#1a5c2e',출장:'#1a3f7a',기타:'#7a1f1a'};
@@ -347,6 +348,11 @@ async function initData(){
     members=(mRaw.length===0)?(await sbPost('members',DEFAULT_MEMBERS)).map(parseMember):mRaw.map(parseMember);
     schedules=sRaw.map(parseSched);
     tasks=tRaw.map(parseTask);
+    /* 공휴일 로드 (테이블이 없거나 실패해도 내장 기본값으로 동작) */
+    try{
+      const hRaw=await sbGet('holidays');
+      if(hRaw.length){HOLIDAYS={};hRaw.forEach(h=>{HOLIDAYS[h.date]=h.name;});}
+    }catch(e){}
     setStatus('✓ 동기화 완료','ok');
   }catch(e){setStatus('연결 오류: '+e.message,'err');}
 }
