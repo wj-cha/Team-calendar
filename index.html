@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.3</title>
+<title>TeamCal v1.4</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -141,7 +141,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.3</span>
+    <span class="version">v1.4</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -290,6 +290,7 @@ async function sbGet(tbl){const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?order=id'
 async function sbPost(tbl,body){const r=await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...SBH,'Prefer':'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json();}
 async function sbPatch(tbl,id,body){const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id,{method:'PATCH',headers:{...SBH,'Prefer':'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json();}
 async function sbDel(tbl,id){const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id,{method:'DELETE',headers:SBH});if(!r.ok)throw new Error(await r.text());}
+async function sbDelWhere(tbl,q){const r=await fetch(SB_URL+'/rest/v1/'+tbl+'?'+q,{method:'DELETE',headers:SBH});if(!r.ok)throw new Error(await r.text());}
 
 /* ===== TOAST ===== */
 function setStatus(msg,type){
@@ -324,11 +325,12 @@ let curYear,curMonth,curTab='cal';
 const today=new Date();
 let editMemberIdx=null,selSchedIdx=null,selTaskIdx=null,stFilter='all',mmSelColor=COLORS[0],selAssignees=[];
 /* 캘린더 Task 필터 상태: null = 전체 선택 */
-let calFilterMembers=null; // null=전체, Set of indices
+let calFilterMembers=null; // null=전체, Set of member DB ids
 let calFilterCats=null;    // null=전체, Set of cat strings
 
 /* ===== UTILS ===== */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function memberById(id){return members.find(m=>m.id===id);}
 function fmtDate(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
 function p2(n){return String(n).padStart(2,'0')}
 function daysDiff(a,b){return Math.ceil((new Date(b)-new Date(a))/86400000)}
@@ -376,10 +378,10 @@ function mainAdd(){
 /* ===== SIDEBAR ===== */
 function renderSidebar(){
   // 팀원 체크박스
-  document.getElementById('sidebar-members').innerHTML=members.map((m,i)=>{
-    const checked=calFilterMembers===null||calFilterMembers.has(i);
+  document.getElementById('sidebar-members').innerHTML=members.map(m=>{
+    const checked=calFilterMembers===null||calFilterMembers.has(m.id);
     return `<label class="cal-filter-item">
-      <input type="checkbox" ${checked?'checked':''} onchange="toggleCalMemberFilter(${i},this.checked)">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleCalMemberFilter(${m.id},this.checked)">
       <div class="avatar" style="background:${m.color};width:20px;height:20px;font-size:9px">${esc(m.name[0])}</div>
       <span class="fi-label">${esc(m.name)}</span>
     </label>`;
@@ -394,9 +396,9 @@ function renderSidebar(){
   }).join('');
 }
 
-function toggleCalMemberFilter(idx,checked){
-  if(calFilterMembers===null) calFilterMembers=new Set(members.map((_,i)=>i));
-  if(checked) calFilterMembers.add(idx); else calFilterMembers.delete(idx);
+function toggleCalMemberFilter(id,checked){
+  if(calFilterMembers===null) calFilterMembers=new Set(members.map(m=>m.id));
+  if(checked) calFilterMembers.add(id); else calFilterMembers.delete(id);
   if(calFilterMembers.size===members.length) calFilterMembers=null; // 전체 선택 시 null로 초기화
   renderCal();
 }
@@ -439,7 +441,7 @@ function renderCal(){
       if(e.start>c.date||e.end<c.date)return false;
       return calFilterMembers===null||calFilterMembers.has(e.memberId);
     }).map(e=>{
-      const si=schedules.indexOf(e);const m=members[e.memberId];const bg=m?.color||'#999';
+      const si=schedules.indexOf(e);const m=memberById(e.memberId);const bg=m?.color||'#999';
       return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+si+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
 
@@ -474,7 +476,7 @@ function goToday(){curYear=today.getFullYear();curMonth=today.getMonth();renderC
 
 /* ===== SCHEDULE ADD ===== */
 function openSchedModal(){
-  document.getElementById('s-member').innerHTML=members.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join('');
+  document.getElementById('s-member').innerHTML=members.map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join('');
   document.getElementById('s-start').value=fmtDate(today);
   document.getElementById('s-end').value=fmtDate(today);
   document.getElementById('s-memo').value='';
@@ -506,7 +508,7 @@ function showSchedDetail(idx){
 
 function renderSchedDetailView(idx){
   const e=schedules[idx];
-  const m=members[e.memberId];
+  const m=memberById(e.memberId);
   document.getElementById('sd-content').innerHTML=
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">'+
     '<div class="av-lg" style="background:'+(m?.color||'#999')+'">'+(m?esc(m.name[0]):'?')+'</div>'+
@@ -525,7 +527,7 @@ function renderSchedDetailView(idx){
 
 function renderSchedEditView(idx){
   const e=schedules[idx];
-  const memberOpts=members.map((m,i)=>'<option value="'+i+'"'+(i===e.memberId?' selected':'')+'>'+esc(m.name)+'</option>').join('');
+  const memberOpts=members.map(m=>'<option value="'+m.id+'"'+(m.id===e.memberId?' selected':'')+'>'+esc(m.name)+'</option>').join('');
   const typeOpts=['휴가','교육','출장','기타'].map(t=>'<option'+(t===e.type?' selected':'')+'>'+t+'</option>').join('');
   document.getElementById('sd-content').innerHTML=
     '<div class="edit-mode-header"><h3>일정 수정</h3><span class="edit-badge">편집 중</span></div>'+
@@ -573,8 +575,8 @@ async function deleteSched(){
 function renderTaskFilters(){
   const sel=document.getElementById('task-filter-member');
   const cur=sel.value;
-  sel.innerHTML='<option value="">전체 팀원</option>'+members.map((m,i)=>'<option value="'+i+'">'+esc(m.name)+'</option>').join('');
-  if(members.some((_,i)=>String(i)===cur))sel.value=cur;
+  sel.innerHTML='<option value="">전체 팀원</option>'+members.map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join('');
+  if(members.some(m=>String(m.id)===cur))sel.value=cur;
 }
 function setStFilter(v,btn){stFilter=v;document.querySelectorAll('.st-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTasks();}
 
@@ -595,7 +597,7 @@ function renderTasks(){
     const now=fmtDate(today);
     const ov=!t.done&&t.due<now;
     const dl=ov?'D+'+daysDiff(t.due,now):(t.due===now?'D-day':'D-'+daysDiff(now,t.due));
-    const asses=t.assignees.map(ai=>'<div class="ass-av" style="background:'+(members[ai]?.color||'#999')+'" title="'+esc(members[ai]?.name||'')+'">'+esc(members[ai]?.name?.[0]||'?')+'</div>').join('');
+    const asses=t.assignees.map(ai=>{const m=memberById(ai);return '<div class="ass-av" style="background:'+(m?.color||'#999')+'" title="'+esc(m?.name||'')+'">'+esc(m?.name?.[0]||'?')+'</div>';}).join('');
     const rangeBadge=t.rangeStart&&t.rangeEnd?'<span class="badge-range">📆 '+t.rangeStart+' ~ '+t.rangeEnd+'</span>':'';
     return '<div class="task-card priority-'+t.pri+(t.done?' done-card':'')+'" onclick="showTaskDetail('+idx+')">'+
       '<div class="task-top">'+
@@ -614,13 +616,18 @@ function renderTasks(){
 }
 
 async function toggleTask(idx){
-  tasks[idx].done=!tasks[idx].done;renderTasks();renderCal();
-  try{await sbPatch('tasks',tasks[idx].id,{done:tasks[idx].done});}catch(e){}
+  const t=tasks[idx];
+  t.done=!t.done;renderTasks();renderCal();
+  try{await sbPatch('tasks',t.id,{done:t.done});}
+  catch(e){t.done=!t.done;renderTasks();renderCal();setStatus('저장 실패: '+e.message,'err');}
 }
 async function confirmDeleteTask(idx){
   if(!confirm('"'+tasks[idx].title+'" Task를 삭제하시겠습니까?'))return;
-  const id=tasks[idx].id;tasks.splice(idx,1);renderTasks();renderCal();
-  try{await sbDel('tasks',id);}catch(e){}
+  setStatus('삭제 중…','info');
+  try{
+    await sbDel('tasks',tasks[idx].id);
+    tasks.splice(idx,1);renderTasks();renderCal();setStatus('✓ 삭제됨','ok');
+  }catch(e){setStatus('삭제 실패: '+e.message,'err');}
 }
 
 /* ===== TASK DETAIL + INLINE EDIT (★ v1.2) ===== */
@@ -634,10 +641,10 @@ function renderTaskDetailView(idx){
   const t=tasks[idx];
   const now=fmtDate(today);
   const ov=!t.done&&t.due<now;
-  const asses=t.assignees.map(ai=>
+  const asses=t.assignees.map(ai=>{const m=memberById(ai);return (
     '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'+
-    '<div class="ass-av" style="background:'+(members[ai]?.color||'#999')+';width:24px;height:24px;font-size:10px">'+esc(members[ai]?.name?.[0]||'?')+'</div>'+
-    '<span style="font-size:13px;color:#202124">'+esc(members[ai]?.name||'')+'</span></div>').join('');
+    '<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px">'+esc(m?.name?.[0]||'?')+'</div>'+
+    '<span style="font-size:13px;color:#202124">'+esc(m?.name||'')+'</span></div>');}).join('');
   const rangeRow=t.rangeStart&&t.rangeEnd
     ?'<div class="detail-row"><div class="detail-label">프로젝트 기간</div><div style="font-size:14px;color:#6a1b9a">📆 '+t.rangeStart+' ~ '+t.rangeEnd+'</div></div>':'';
   document.getElementById('td-content').innerHTML=
@@ -661,7 +668,7 @@ function renderTaskEditView(idx){
   const catOpts=CATS.map(c=>'<option'+(c===t.cat?' selected':'')+'>'+c+'</option>').join('');
   const priOpts=[['high','높음'],['mid','중간'],['low','낮음']].map(([v,l])=>'<option value="'+v+'"'+(v===t.pri?' selected':'')+'>'+l+'</option>').join('');
   // 담당자 칩 (편집용 - 고유 id prefix "te-")
-  const chipHtml=members.map((m,i)=>'<div class="ms-chip'+(t.assignees.includes(i)?' sel':'')+'" id="te-chip-'+i+'" onclick="toggleEditAssignee('+i+')">'+esc(m.name)+'</div>').join('');
+  const chipHtml=members.map(m=>'<div class="ms-chip'+(t.assignees.includes(m.id)?' sel':'')+'" id="te-chip-'+m.id+'" onclick="toggleEditAssignee('+m.id+')">'+esc(m.name)+'</div>').join('');
   document.getElementById('td-content').innerHTML=
     '<div class="edit-mode-header"><h3>Task 수정</h3><span class="edit-badge">편집 중</span></div>'+
     '<div class="fg"><label>제목</label><input type="text" id="te-title" value="'+esc(t.title)+'"></div>'+
@@ -684,11 +691,11 @@ function renderTaskEditView(idx){
     '<button class="btn-save" onclick="updateTask('+idx+')">저장</button>';
 }
 
-function toggleEditAssignee(i){
+function toggleEditAssignee(id){
   const arr=window._editAssignees;
-  const p=arr.indexOf(i);
-  if(p===-1)arr.push(i);else arr.splice(p,1);
-  members.forEach((_,j)=>{const c=document.getElementById('te-chip-'+j);if(c)c.classList.toggle('sel',arr.includes(j));});
+  const p=arr.indexOf(id);
+  if(p===-1)arr.push(id);else arr.splice(p,1);
+  members.forEach(m=>{const c=document.getElementById('te-chip-'+m.id);if(c)c.classList.toggle('sel',arr.includes(m.id));});
 }
 function onEditRangeStartChange(){
   const rs=document.getElementById('te-range-start').value;
@@ -732,11 +739,12 @@ async function updateTask(idx){
 
 async function deleteTask(){
   if(selTaskIdx===null)return;
-  const id=tasks[selTaskIdx].id;
-  tasks.splice(selTaskIdx,1);
-  closeModal('modal-tdetail');
-  renderTasks();renderCal();
-  try{await sbDel('tasks',id);}catch(e){}
+  closeModal('modal-tdetail');setStatus('삭제 중…','info');
+  try{
+    await sbDel('tasks',tasks[selTaskIdx].id);
+    tasks.splice(selTaskIdx,1);
+    renderTasks();renderCal();setStatus('✓ 삭제됨','ok');
+  }catch(e){setStatus('삭제 실패: '+e.message,'err');}
 }
 
 /* ===== TASK ADD ===== */
@@ -757,13 +765,13 @@ function openTaskModal(){
   document.getElementById('t-range-start').value='';
   document.getElementById('t-range-end').value='';
   selAssignees=[];
-  document.getElementById('t-assignees').innerHTML=members.map((m,i)=>'<div class="ms-chip" id="chip-'+i+'" onclick="toggleAssignee('+i+')">'+esc(m.name)+'</div>').join('');
+  document.getElementById('t-assignees').innerHTML=members.map(m=>'<div class="ms-chip" id="chip-'+m.id+'" onclick="toggleAssignee('+m.id+')">'+esc(m.name)+'</div>').join('');
   openModal('modal-task');
 }
-function toggleAssignee(i){
-  const p=selAssignees.indexOf(i);
-  if(p===-1)selAssignees.push(i);else selAssignees.splice(p,1);
-  members.forEach((_,j)=>{const c=document.getElementById('chip-'+j);if(c)c.classList.toggle('sel',selAssignees.includes(j));});
+function toggleAssignee(id){
+  const p=selAssignees.indexOf(id);
+  if(p===-1)selAssignees.push(id);else selAssignees.splice(p,1);
+  members.forEach(m=>{const c=document.getElementById('chip-'+m.id);if(c)c.classList.toggle('sel',selAssignees.includes(m.id));});
 }
 async function saveTask(){
   const title=document.getElementById('t-title').value.trim();
@@ -825,13 +833,28 @@ async function saveMember(){
   }catch(e){setStatus('저장 실패: '+e.message,'err');}
 }
 async function removeMember(idx){
-  if(!confirm('"'+members[idx].name+'"을(를) 삭제하시겠습니까?'))return;
-  const id=members[idx].id;
-  schedules=schedules.filter(s=>s.memberId!==idx).map(s=>({...s,memberId:s.memberId>idx?s.memberId-1:s.memberId}));
-  tasks=tasks.map(t=>({...t,assignees:t.assignees.filter(a=>a!==idx).map(a=>a>idx?a-1:a)}));
-  members.splice(idx,1);
-  try{await sbDel('members',id);}catch(e){}
-  renderMembersPanel();renderSidebar();
+  const m=members[idx];
+  const schedCnt=schedules.filter(s=>s.memberId===m.id).length;
+  if(!confirm('"'+m.name+'"을(를) 삭제하시겠습니까?'+(schedCnt?'\n이 팀원의 일정 '+schedCnt+'건도 함께 삭제됩니다.':'')))return;
+  setStatus('삭제 중…','info');
+  try{
+    /* 1) 이 팀원의 일정을 DB에서 함께 삭제 */
+    await sbDelWhere('schedules','member_id=eq.'+m.id);
+    /* 2) Task 담당자 목록에서 제거 (DB 반영) */
+    for(const t of tasks){
+      if(!t.assignees.includes(m.id))continue;
+      const na=t.assignees.filter(a=>a!==m.id);
+      await sbPatch('tasks',t.id,{assignees:JSON.stringify(na)});
+      t.assignees=na;
+    }
+    /* 3) 팀원 삭제 */
+    await sbDel('members',m.id);
+    schedules=schedules.filter(s=>s.memberId!==m.id);
+    members.splice(idx,1);
+    if(calFilterMembers){calFilterMembers.delete(m.id);if(!calFilterMembers.size||calFilterMembers.size===members.length)calFilterMembers=null;}
+    setStatus('✓ 삭제됨','ok');
+  }catch(e){setStatus('삭제 실패: '+e.message,'err');}
+  renderMembersPanel();renderSidebar();renderCal();
 }
 
 /* ===== START ===== */
