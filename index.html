@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.5</title>
+<title>TeamCal v1.6</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -126,6 +126,34 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .multi-sel{display:flex;flex-wrap:wrap;gap:6px}
 .ms-chip{padding:5px 12px;border-radius:14px;font-size:12px;cursor:pointer;border:1px solid #dadce0;color:#5f6368;background:none;transition:all .15s;font-weight:500}
 .ms-chip.sel{background:#1a73e8;color:#fff;border-color:#1a73e8}
+/* KANBAN BOARD (★ v1.6) */
+.board-panel{padding:16px 20px;display:flex;gap:12px;align-items:flex-start;overflow-x:auto;min-height:420px}
+.kb-col{background:#f1f3f4;border-radius:10px;padding:10px;flex:1;min-width:230px}
+.kb-head{display:flex;align-items:center;gap:7px;padding:2px 6px 8px;font-size:13px;font-weight:600;color:#202124}
+.kb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.kb-count{font-size:11px;color:#80868b;font-weight:500;background:#e8eaed;border-radius:8px;padding:1px 7px;margin-left:auto}
+.kb-cards{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.kb-card{background:#fff;border:1px solid #e0e0e0;border-left:3px solid #e0e0e0;border-radius:8px;padding:10px 12px;cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kb-card:hover{border-color:#bbb}
+.kb-card.priority-high{border-left-color:#ea4335}
+.kb-card.priority-mid{border-left-color:#fbbc04}
+.kb-card.priority-low{border-left-color:#34a853}
+.kb-card.dragging{opacity:.4}
+.kb-col.dragover{outline:2px dashed #1a73e8;outline-offset:-2px}
+.kb-title{font-size:13px;font-weight:500;color:#202124;line-height:1.4;word-break:break-word}
+.kb-meta{display:flex;align-items:center;gap:6px;margin-top:8px;min-height:18px}
+.kb-cmt{font-size:11px;color:#80868b}
+.kb-add{width:100%;background:none;border:none;color:#5f6368;font-size:12px;padding:7px;border-radius:6px;cursor:pointer;text-align:left;margin-top:4px}
+.kb-add:hover{background:#e8eaed;color:#1a73e8}
+.cmt-item{display:flex;gap:8px;margin-bottom:10px}
+.cmt-body{flex:1;background:#f8f9fa;border-radius:8px;padding:8px 10px}
+.cmt-head{display:flex;gap:6px;align-items:baseline;margin-bottom:2px}
+.cmt-name{font-size:12px;font-weight:600;color:#202124}
+.cmt-time{font-size:10px;color:#9aa0a6}
+.cmt-text{font-size:13px;color:#202124;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.cmt-input-row{display:flex;gap:6px;margin-top:8px}
+.cmt-input-row select{width:96px;flex-shrink:0}
+@media(max-width:640px){.board-panel{flex-direction:column}.kb-col{width:100%;min-width:0}}
 /* 상세 뷰 내 구분선 */
 .detail-row{margin-bottom:12px}
 .detail-label{font-size:11px;font-weight:600;color:#80868b;margin-bottom:3px;letter-spacing:.3px}
@@ -141,13 +169,14 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.5</span>
+    <span class="version">v1.6</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('cal',this)">📅 일정</div>
     <div class="tab" onclick="switchTab('task',this)">✅ Task</div>
+    <div class="tab" onclick="switchTab('board',this)">📋 보드</div>
     <div class="tab" onclick="switchTab('members',this)">👥 팀원 관리</div>
   </div>
 
@@ -189,6 +218,10 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
       </div>
     </div>
     <div class="task-list" id="task-list"></div>
+  </div>
+
+  <div class="panel" id="panel-board">
+    <div class="board-panel" id="board-cols"></div>
   </div>
 
   <div class="panel" id="panel-members">
@@ -266,6 +299,34 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
   </div>
 </div>
 
+<!-- 보드 카드 추가 (★ v1.6) -->
+<div class="modal-overlay" id="modal-card">
+  <div class="modal">
+    <h3>카드 추가</h3>
+    <div class="fg"><label>제목</label><input type="text" id="c-title" placeholder="예: 법인카드 증빙 누락 확인"></div>
+    <div class="fg-row">
+      <div class="fg"><label>상태</label><select id="c-status"></select></div>
+      <div class="fg"><label>우선순위</label>
+        <select id="c-pri"><option value="high">높음</option><option value="mid" selected>중간</option><option value="low">낮음</option></select>
+      </div>
+    </div>
+    <div class="fg"><label>담당자 (복수 선택)</label><div class="multi-sel" id="c-assignees"></div></div>
+    <div class="fg"><label>내용</label><textarea id="c-memo" placeholder="이슈 내용이나 배경을 입력하세요"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-card')">취소</button>
+      <button class="btn-save" onclick="saveCard()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 보드 카드 상세 / 인라인 수정 (★ v1.6) -->
+<div class="modal-overlay" id="modal-cdetail">
+  <div class="modal">
+    <div id="cd-content"></div>
+    <div class="modal-actions" id="cd-actions"></div>
+  </div>
+</div>
+
 <!-- 팀원 추가/편집 -->
 <div class="modal-overlay" id="modal-member">
   <div class="modal">
@@ -313,6 +374,8 @@ const TYPE_TEXT={휴가:'#7a5a00',교육:'#1a5c2e',출장:'#1a3f7a',기타:'#7a1
 const PRI_LABEL={high:'높음',mid:'중간',low:'낮음'};
 const CATS=['월마감','결산','세무','감사','내부회계','보고','기타']; // ★ v1.2 내부회계 추가
 const RANGE_BG='#f3e8fd',RANGE_CL='#6a1b9a',RANGE_BR='#e1bee7';
+const KB_STATUS=['대기','진행','보류','완료']; // ★ v1.6 칸반 컬럼
+const KB_COLOR={대기:'#9aa0a6',진행:'#1a73e8',보류:'#f9ab00',완료:'#34a853'};
 const DEFAULT_MEMBERS=[
   {name:'윤찬호',role:'회계팀',color:'#1a73e8'},{name:'김한솔',role:'회계팀',color:'#e91e63'},
   {name:'차원진',role:'회계팀',color:'#9c27b0'},{name:'이승우',role:'회계팀',color:'#ff9800'},
@@ -321,7 +384,8 @@ const DEFAULT_MEMBERS=[
 ];
 
 /* ===== STATE ===== */
-let members=[],schedules=[],tasks=[];
+let members=[],schedules=[],tasks=[],cards=[];
+let selCardIdx=null;
 let curYear,curMonth,curTab='cal';
 const today=new Date();
 let editMemberIdx=null,selSchedIdx=null,selTaskIdx=null,stFilter='all',mmSelColor=COLORS[0],selAssignees=[];
@@ -344,10 +408,11 @@ async function initData(){
   curYear=today.getFullYear();curMonth=today.getMonth();
   setStatus('데이터 불러오는 중…','info');
   try{
-    const [mRaw,sRaw,tRaw]=await Promise.all([sbGet('members'),sbGet('schedules'),sbGet('tasks')]);
+    const [mRaw,sRaw,tRaw,cRaw]=await Promise.all([sbGet('members'),sbGet('schedules'),sbGet('tasks'),sbGet('board_cards')]);
     members=(mRaw.length===0)?(await sbPost('members',DEFAULT_MEMBERS)).map(parseMember):mRaw.map(parseMember);
     schedules=sRaw.map(parseSched);
     tasks=tRaw.map(parseTask);
+    cards=cRaw.map(parseCard);
     /* 공휴일 로드 (테이블이 없거나 실패해도 내장 기본값으로 동작) */
     try{
       const hRaw=await sbGet('holidays');
@@ -358,6 +423,12 @@ async function initData(){
 }
 function parseMember(m){return {id:m.id,name:m.name,role:m.role||'',color:m.color||'#1a73e8'};}
 function parseSched(s){return {id:s.id,memberId:s.member_id,type:s.type,start:s.start_date,end:s.end_date,memo:s.memo||''};}
+function parseCard(c){
+  let assignees=[],comments=[];
+  try{assignees=JSON.parse(c.assignees||'[]');}catch(e){}
+  try{comments=JSON.parse(c.comments||'[]');}catch(e){}
+  return {id:c.id,title:c.title,status:c.status||'대기',pri:c.pri||'mid',assignees,memo:c.memo||'',comments};
+}
 function parseTask(t){
   let assignees=[];try{assignees=JSON.parse(t.assignees||'[]');}catch(e){}
   return {id:t.id,title:t.title,cat:t.cat,pri:t.pri,due:t.due_date,rangeStart:t.start_date||'',rangeEnd:t.end_date||'',assignees,memo:t.memo||'',done:!!t.done};
@@ -370,14 +441,16 @@ function switchTab(t,el){
   el.classList.add('active');
   document.querySelectorAll('.panel').forEach(e=>e.classList.remove('active'));
   document.getElementById('panel-'+t).classList.add('active');
-  document.getElementById('add-label').textContent={cal:'일정 추가',task:'Task 추가',members:'팀원 추가'}[t];
+  document.getElementById('add-label').textContent={cal:'일정 추가',task:'Task 추가',board:'카드 추가',members:'팀원 추가'}[t];
   if(t==='cal'){renderSidebar();renderCal();}
   if(t==='task'){renderTaskFilters();renderTasks();}
+  if(t==='board')renderBoard();
   if(t==='members')renderMembersPanel();
 }
 function mainAdd(){
   if(curTab==='cal')openSchedModal();
   else if(curTab==='task')openTaskModal();
+  else if(curTab==='board')openCardModal('대기');
   else openMemberModal(null);
 }
 
@@ -794,6 +867,175 @@ async function saveTask(){
     tasks.push(parseTask(res[0]));
     renderTasks();renderCal();setStatus('✓ 저장됨','ok');
   }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+
+/* ===== KANBAN BOARD (★ v1.6) ===== */
+function nowStamp(){const d=new Date();return fmtDate(d)+' '+p2(d.getHours())+':'+p2(d.getMinutes());}
+function assAvatars(ids){return ids.map(ai=>{const m=memberById(ai);return '<div class="ass-av" style="background:'+(m?.color||'#999')+'" title="'+esc(m?.name||'')+'">'+esc(m?.name?.[0]||'?')+'</div>';}).join('');}
+
+function renderBoard(){
+  document.getElementById('board-cols').innerHTML=KB_STATUS.map(st=>{
+    const list=cards.filter(c=>c.status===st);
+    const cardsHtml=list.map(c=>{
+      const idx=cards.indexOf(c);
+      const cmt=c.comments.length?'<span class="kb-cmt">💬 '+c.comments.length+'</span>':'';
+      return '<div class="kb-card priority-'+c.pri+'" draggable="true" ondragstart="kbDragStart(event,'+c.id+')" ondragend="kbDragEnd(event)" onclick="showCardDetail('+idx+')">'+
+        '<div class="kb-title">'+esc(c.title)+'</div>'+
+        '<div class="kb-meta">'+cmt+'<div class="assignees" style="margin-left:auto">'+assAvatars(c.assignees)+'</div></div></div>';
+    }).join('');
+    return '<div class="kb-col" ondragover="kbDragOver(event)" ondragleave="kbDragLeave(event)" ondrop="kbDrop(event,\''+st+'\')">'+
+      '<div class="kb-head"><span class="kb-dot" style="background:'+KB_COLOR[st]+'"></span>'+st+'<span class="kb-count">'+list.length+'</span></div>'+
+      '<div class="kb-cards">'+cardsHtml+'</div>'+
+      '<button class="kb-add" onclick="openCardModal(\''+st+'\')">+ 카드 추가</button></div>';
+  }).join('');
+}
+
+/* --- 드래그 앤 드롭 --- */
+let kbDragId=null;
+function kbDragStart(ev,id){kbDragId=id;ev.target.classList.add('dragging');ev.dataTransfer.effectAllowed='move';}
+function kbDragEnd(ev){ev.target.classList.remove('dragging');document.querySelectorAll('.kb-col').forEach(c=>c.classList.remove('dragover'));}
+function kbDragOver(ev){ev.preventDefault();ev.currentTarget.classList.add('dragover');}
+function kbDragLeave(ev){ev.currentTarget.classList.remove('dragover');}
+async function kbDrop(ev,st){
+  ev.preventDefault();ev.currentTarget.classList.remove('dragover');
+  const c=cards.find(x=>x.id===kbDragId);kbDragId=null;
+  if(!c||c.status===st)return;
+  const prev=c.status;c.status=st;renderBoard();
+  try{await sbPatch('board_cards',c.id,{status:st});}
+  catch(e){c.status=prev;renderBoard();setStatus('저장 실패: '+e.message,'err');}
+}
+
+/* --- 카드 추가 --- */
+let selCardAssignees=[];
+function openCardModal(st){
+  document.getElementById('c-title').value='';
+  document.getElementById('c-memo').value='';
+  document.getElementById('c-status').innerHTML=KB_STATUS.map(s=>'<option'+(s===st?' selected':'')+'>'+s+'</option>').join('');
+  selCardAssignees=[];
+  document.getElementById('c-assignees').innerHTML=members.map(m=>'<div class="ms-chip" id="cc-chip-'+m.id+'" onclick="toggleCardAssignee('+m.id+')">'+esc(m.name)+'</div>').join('');
+  openModal('modal-card');
+}
+function toggleCardAssignee(id){
+  const p=selCardAssignees.indexOf(id);
+  if(p===-1)selCardAssignees.push(id);else selCardAssignees.splice(p,1);
+  members.forEach(m=>{const c=document.getElementById('cc-chip-'+m.id);if(c)c.classList.toggle('sel',selCardAssignees.includes(m.id));});
+}
+async function saveCard(){
+  const title=document.getElementById('c-title').value.trim();
+  if(!title){alert('제목을 입력해주세요');return;}
+  closeModal('modal-card');setStatus('저장 중…','info');
+  try{
+    const res=await sbPost('board_cards',{title,status:document.getElementById('c-status').value,pri:document.getElementById('c-pri').value,assignees:JSON.stringify(selCardAssignees),memo:document.getElementById('c-memo').value,comments:'[]'});
+    cards.push(parseCard(res[0]));
+    renderBoard();setStatus('✓ 저장됨','ok');
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+
+/* --- 카드 상세 / 코멘트 --- */
+function showCardDetail(idx){
+  selCardIdx=idx;
+  renderCardDetailView(idx);
+  openModal('modal-cdetail');
+}
+function renderCardDetailView(idx){
+  const c=cards[idx];
+  const stOpts=KB_STATUS.map(s=>'<option'+(s===c.status?' selected':'')+'>'+s+'</option>').join('');
+  const asses=c.assignees.map(ai=>{const m=memberById(ai);return (
+    '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'+
+    '<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px">'+esc(m?.name?.[0]||'?')+'</div>'+
+    '<span style="font-size:13px;color:#202124">'+esc(m?.name||'')+'</span></div>');}).join('');
+  const cmts=c.comments.map(cm=>{
+    const m=memberById(cm.m);
+    const name=m?.name||cm.name||'?';
+    return '<div class="cmt-item">'+
+      '<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px;flex-shrink:0;margin:0;border:none">'+esc(name[0]||'?')+'</div>'+
+      '<div class="cmt-body"><div class="cmt-head"><span class="cmt-name">'+esc(name)+'</span><span class="cmt-time">'+esc(cm.at)+'</span></div>'+
+      '<div class="cmt-text">'+esc(cm.text)+'</div></div></div>';
+  }).join('')||'<div style="font-size:12px;color:#9aa0a6;margin-bottom:8px">아직 기록이 없습니다</div>';
+  const me=localStorage.getItem('kb-me');
+  const meOpts=members.map(m=>'<option value="'+m.id+'"'+(String(m.id)===me?' selected':'')+'>'+esc(m.name)+'</option>').join('');
+  document.getElementById('cd-content').innerHTML=
+    '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;align-items:center">'+
+    '<select id="cd-status" onchange="cardStatusChange('+idx+',this.value)" style="border:1px solid #dadce0;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:600;color:'+KB_COLOR[c.status]+'">'+stOpts+'</select>'+
+    '<span class="task-badge badge-pri-'+c.pri+'">'+PRI_LABEL[c.pri]+'</span></div>'+
+    '<div style="font-size:17px;font-weight:600;color:#202124;margin-bottom:16px;line-height:1.4">'+esc(c.title)+'</div>'+
+    (c.assignees.length?'<div class="detail-row"><div class="detail-label">담당자</div>'+asses+'</div>':'')+
+    (c.memo?'<div class="detail-row"><div class="detail-label">내용</div><div style="font-size:13px;color:#202124;background:#f8f9fa;border-radius:8px;padding:12px;line-height:1.5;white-space:pre-wrap">'+esc(c.memo)+'</div></div>':'')+
+    '<div class="detail-row"><div class="detail-label">업데이트 기록 ('+c.comments.length+')</div>'+cmts+
+    '<div class="cmt-input-row"><select id="cd-cmt-who">'+meOpts+'</select>'+
+    '<input type="text" id="cd-cmt-text" placeholder="진행상황을 기록하세요" style="flex:1;padding:7px 10px;border:1px solid #dadce0;border-radius:7px;font-size:13px;outline:none" onkeydown="if(event.key===\'Enter\')addCardComment('+idx+')">'+
+    '<button class="btn-save" style="padding:7px 14px" onclick="addCardComment('+idx+')">기록</button></div></div>';
+  document.getElementById('cd-actions').innerHTML=
+    '<button class="btn-danger" onclick="deleteCard()">삭제</button>'+
+    '<button class="btn-edit" onclick="renderCardEditView('+idx+')">✏️ 수정</button>'+
+    '<button class="btn-cancel" onclick="closeModal(\'modal-cdetail\')">닫기</button>';
+}
+async function cardStatusChange(idx,st){
+  const c=cards[idx];const prev=c.status;
+  c.status=st;
+  try{await sbPatch('board_cards',c.id,{status:st});renderBoard();renderCardDetailView(idx);}
+  catch(e){c.status=prev;renderCardDetailView(idx);setStatus('저장 실패: '+e.message,'err');}
+}
+async function addCardComment(idx){
+  const c=cards[idx];
+  const text=document.getElementById('cd-cmt-text').value.trim();
+  if(!text)return;
+  const who=+document.getElementById('cd-cmt-who').value;
+  localStorage.setItem('kb-me',String(who));
+  const m=memberById(who);
+  const next=[...c.comments,{m:who,name:m?.name||'',at:nowStamp(),text}];
+  try{
+    await sbPatch('board_cards',c.id,{comments:JSON.stringify(next)});
+    c.comments=next;
+    renderCardDetailView(idx);renderBoard();
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+function renderCardEditView(idx){
+  const c=cards[idx];
+  const stOpts=KB_STATUS.map(s=>'<option'+(s===c.status?' selected':'')+'>'+s+'</option>').join('');
+  const priOpts=[['high','높음'],['mid','중간'],['low','낮음']].map(([v,l])=>'<option value="'+v+'"'+(v===c.pri?' selected':'')+'>'+l+'</option>').join('');
+  const chipHtml=members.map(m=>'<div class="ms-chip'+(c.assignees.includes(m.id)?' sel':'')+'" id="ce-chip-'+m.id+'" onclick="toggleCardEditAssignee('+m.id+')">'+esc(m.name)+'</div>').join('');
+  window._cardEditAssignees=[...c.assignees];
+  document.getElementById('cd-content').innerHTML=
+    '<div class="edit-mode-header"><h3>카드 수정</h3><span class="edit-badge">편집 중</span></div>'+
+    '<div class="fg"><label>제목</label><input type="text" id="ce-title" value="'+esc(c.title)+'"></div>'+
+    '<div class="fg-row">'+
+    '<div class="fg"><label>상태</label><select id="ce-status">'+stOpts+'</select></div>'+
+    '<div class="fg"><label>우선순위</label><select id="ce-pri">'+priOpts+'</select></div>'+
+    '</div>'+
+    '<div class="fg"><label>담당자</label><div class="multi-sel">'+chipHtml+'</div></div>'+
+    '<div class="fg"><label>내용</label><textarea id="ce-memo">'+esc(c.memo)+'</textarea></div>';
+  document.getElementById('cd-actions').innerHTML=
+    '<button class="btn-cancel" onclick="renderCardDetailView('+idx+')">취소</button>'+
+    '<button class="btn-save" onclick="updateCard('+idx+')">저장</button>';
+}
+function toggleCardEditAssignee(id){
+  const arr=window._cardEditAssignees;
+  const p=arr.indexOf(id);
+  if(p===-1)arr.push(id);else arr.splice(p,1);
+  members.forEach(m=>{const c=document.getElementById('ce-chip-'+m.id);if(c)c.classList.toggle('sel',arr.includes(m.id));});
+}
+async function updateCard(idx){
+  const title=document.getElementById('ce-title').value.trim();
+  if(!title){alert('제목을 입력해주세요');return;}
+  setStatus('수정 중…','info');
+  try{
+    const payload={title,status:document.getElementById('ce-status').value,pri:document.getElementById('ce-pri').value,assignees:JSON.stringify(window._cardEditAssignees||[]),memo:document.getElementById('ce-memo').value};
+    await sbPatch('board_cards',cards[idx].id,payload);
+    cards[idx]={...cards[idx],title,status:payload.status,pri:payload.pri,assignees:window._cardEditAssignees||[],memo:payload.memo};
+    closeModal('modal-cdetail');
+    renderBoard();setStatus('✓ 수정됨','ok');
+  }catch(e){setStatus('수정 실패: '+e.message,'err');}
+}
+async function deleteCard(){
+  if(selCardIdx===null)return;
+  if(!confirm('"'+cards[selCardIdx].title+'" 카드를 삭제하시겠습니까?'))return;
+  closeModal('modal-cdetail');setStatus('삭제 중…','info');
+  try{
+    await sbDel('board_cards',cards[selCardIdx].id);
+    cards.splice(selCardIdx,1);
+    renderBoard();setStatus('✓ 삭제됨','ok');
+  }catch(e){setStatus('삭제 실패: '+e.message,'err');}
 }
 
 /* ===== MEMBERS ===== */
