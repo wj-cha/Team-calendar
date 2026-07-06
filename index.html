@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.6</title>
+<title>TeamCal v1.6.1</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -153,6 +153,10 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .cmt-text{font-size:13px;color:#202124;line-height:1.45;white-space:pre-wrap;word-break:break-word}
 .cmt-input-row{display:flex;gap:6px;margin-top:8px}
 .cmt-input-row select{width:96px;flex-shrink:0}
+.cmt-acts{margin-left:auto;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.cmt-item:hover .cmt-acts{opacity:1}
+.cmt-acts button{background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;border-radius:4px;color:#9aa0a6;line-height:1}
+.cmt-acts button:hover{background:#e8eaed;color:#202124}
 @media(max-width:640px){.board-panel{flex-direction:column}.kb-col{width:100%;min-width:0}}
 /* 상세 뷰 내 구분선 */
 .detail-row{margin-bottom:12px}
@@ -169,7 +173,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.6</span>
+    <span class="version">v1.6.1</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -934,6 +938,7 @@ async function saveCard(){
 /* --- 카드 상세 / 코멘트 --- */
 function showCardDetail(idx){
   selCardIdx=idx;
+  window._editCmtIdx=null;
   renderCardDetailView(idx);
   openModal('modal-cdetail');
 }
@@ -944,12 +949,24 @@ function renderCardDetailView(idx){
     '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'+
     '<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px">'+esc(m?.name?.[0]||'?')+'</div>'+
     '<span style="font-size:13px;color:#202124">'+esc(m?.name||'')+'</span></div>');}).join('');
-  const cmts=c.comments.map(cm=>{
+  const cmts=c.comments.map((cm,ci)=>{
     const m=memberById(cm.m);
     const name=m?.name||cm.name||'?';
-    return '<div class="cmt-item">'+
-      '<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px;flex-shrink:0;margin:0;border:none">'+esc(name[0]||'?')+'</div>'+
-      '<div class="cmt-body"><div class="cmt-head"><span class="cmt-name">'+esc(name)+'</span><span class="cmt-time">'+esc(cm.at)+'</span></div>'+
+    const av='<div class="ass-av" style="background:'+(m?.color||'#999')+';width:24px;height:24px;font-size:10px;flex-shrink:0;margin:0;border:none">'+esc(name[0]||'?')+'</div>';
+    const head='<span class="cmt-name">'+esc(name)+'</span><span class="cmt-time">'+esc(cm.at)+(cm.ed?' · 수정됨':'')+'</span>';
+    /* 편집 중인 기록: 인라인 입력으로 전환 */
+    if(window._editCmtIdx===ci){
+      return '<div class="cmt-item">'+av+
+        '<div class="cmt-body"><div class="cmt-head">'+head+'</div>'+
+        '<div class="cmt-input-row" style="margin-top:4px">'+
+        '<input type="text" id="cd-cmt-edit" value="'+esc(cm.text)+'" style="flex:1;padding:6px 9px;border:1px solid #1a73e8;border-radius:7px;font-size:13px;outline:none" onkeydown="if(event.key===\'Enter\')saveCmtEdit('+idx+','+ci+');if(event.key===\'Escape\')cancelCmtEdit('+idx+')">'+
+        '<button class="btn-save" style="padding:6px 12px" onclick="saveCmtEdit('+idx+','+ci+')">저장</button>'+
+        '<button class="btn-cancel" style="padding:6px 8px" onclick="cancelCmtEdit('+idx+')">취소</button>'+
+        '</div></div></div>';
+    }
+    return '<div class="cmt-item">'+av+
+      '<div class="cmt-body"><div class="cmt-head">'+head+
+      '<span class="cmt-acts"><button title="수정" onclick="startCmtEdit('+idx+','+ci+')">✏️</button><button title="삭제" onclick="deleteCmt('+idx+','+ci+')">🗑️</button></span></div>'+
       '<div class="cmt-text">'+esc(cm.text)+'</div></div></div>';
   }).join('')||'<div style="font-size:12px;color:#9aa0a6;margin-bottom:8px">아직 기록이 없습니다</div>';
   const me=localStorage.getItem('kb-me');
@@ -990,6 +1007,37 @@ async function addCardComment(idx){
     renderCardDetailView(idx);renderBoard();
   }catch(e){setStatus('저장 실패: '+e.message,'err');}
 }
+/* --- 기록(코멘트) 수정/삭제 (★ v1.6.1) --- */
+function startCmtEdit(idx,ci){
+  window._editCmtIdx=ci;
+  renderCardDetailView(idx);
+  const i=document.getElementById('cd-cmt-edit');
+  if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}
+}
+function cancelCmtEdit(idx){window._editCmtIdx=null;renderCardDetailView(idx);}
+async function saveCmtEdit(idx,ci){
+  const c=cards[idx];
+  const text=document.getElementById('cd-cmt-edit').value.trim();
+  if(!text){alert('내용을 입력해주세요');return;}
+  if(text===c.comments[ci].text){cancelCmtEdit(idx);return;}
+  const next=c.comments.map((cm,i)=>i===ci?{...cm,text,ed:true}:cm);
+  try{
+    await sbPatch('board_cards',c.id,{comments:JSON.stringify(next)});
+    c.comments=next;window._editCmtIdx=null;
+    renderCardDetailView(idx);
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+async function deleteCmt(idx,ci){
+  if(!confirm('이 기록을 삭제하시겠습니까?'))return;
+  const c=cards[idx];
+  const next=c.comments.filter((_,i)=>i!==ci);
+  try{
+    await sbPatch('board_cards',c.id,{comments:JSON.stringify(next)});
+    c.comments=next;window._editCmtIdx=null;
+    renderCardDetailView(idx);renderBoard();
+  }catch(e){setStatus('저장 실패: '+e.message,'err');}
+}
+
 function renderCardEditView(idx){
   const c=cards[idx];
   const stOpts=KB_STATUS.map(s=>'<option'+(s===c.status?' selected':'')+'>'+s+'</option>').join('');
