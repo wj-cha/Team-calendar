@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.6.1</title>
+<title>TeamCal v1.6.2</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -106,6 +106,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .fg input,.fg select,.fg textarea{width:100%;padding:9px 11px;border:1px solid #dadce0;border-radius:7px;font-size:13px;color:#202124;background:#fff;outline:none;font-family:inherit}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#1a73e8;box-shadow:0 0 0 2px #e8f0fe}
 .fg textarea{resize:vertical;min-height:60px}
+.fg textarea.tall{min-height:160px;line-height:1.5}
 .fg-row{display:flex;gap:10px}.fg-row .fg{flex:1}
 .section-label{font-size:11px;font-weight:600;color:#80868b;letter-spacing:.6px;margin-bottom:10px;margin-top:2px;display:flex;align-items:center;gap:6px}
 .section-label span{flex:1;height:1px;background:#f1f3f4;display:inline-block}
@@ -173,7 +174,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.6.1</span>
+    <span class="version">v1.6.2</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -315,7 +316,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
       </div>
     </div>
     <div class="fg"><label>담당자 (복수 선택)</label><div class="multi-sel" id="c-assignees"></div></div>
-    <div class="fg"><label>내용</label><textarea id="c-memo" placeholder="이슈 내용이나 배경을 입력하세요"></textarea></div>
+    <div class="fg"><label>내용</label><textarea id="c-memo" class="tall" placeholder="이슈 내용이나 배경을 입력하세요"></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-card')">취소</button>
       <button class="btn-save" onclick="saveCard()">저장</button>
@@ -1052,7 +1053,7 @@ function renderCardEditView(idx){
     '<div class="fg"><label>우선순위</label><select id="ce-pri">'+priOpts+'</select></div>'+
     '</div>'+
     '<div class="fg"><label>담당자</label><div class="multi-sel">'+chipHtml+'</div></div>'+
-    '<div class="fg"><label>내용</label><textarea id="ce-memo">'+esc(c.memo)+'</textarea></div>';
+    '<div class="fg"><label>내용</label><textarea id="ce-memo" class="tall">'+esc(c.memo)+'</textarea></div>';
   document.getElementById('cd-actions').innerHTML=
     '<button class="btn-cancel" onclick="renderCardDetailView('+idx+')">취소</button>'+
     '<button class="btn-save" onclick="updateCard('+idx+')">저장</button>';
