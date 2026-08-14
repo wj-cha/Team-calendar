@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.7</title>
+<title>TeamCal v1.7.1</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -187,7 +187,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.7</span>
+    <span class="version">v1.7.1</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
@@ -385,9 +385,10 @@ async function stRemove(paths){
   const r=await fetch(SB_URL+'/storage/v1/object/'+ATT_BUCKET,{method:'DELETE',headers:{...SBH},body:JSON.stringify({prefixes:paths})});
   if(!r.ok)throw new Error(await r.text());
 }
-function stURL(path){return SB_URL+'/storage/v1/object/public/'+ATT_BUCKET+'/'+encodeURI(path);}
+/* 공개 URL. download 파라미터로 원본 파일명(한글 가능)으로 내려받게 함 */
+function stURL(path,name){return SB_URL+'/storage/v1/object/public/'+ATT_BUCKET+'/'+path.split('/').map(encodeURIComponent).join('/')+(name?'?download='+encodeURIComponent(name):'');}
 function humanSize(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':(b/1048576).toFixed(1)+' MB';}
-function safeName(n){return n.replace(/[^\w.\-가-힣]+/g,'_').slice(0,80);}
+function fileExt(n){const m=n.match(/\.[A-Za-z0-9]{1,10}$/);return m?m[0].toLowerCase():'';}
 function uid(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.round(Math.random()*1e6));}
 
 /* ===== TOAST ===== */
@@ -974,7 +975,8 @@ async function uploadFilesFor(cardId,files){
   const added=[];
   for(const f of files){
     if(f.size>ATT_MAX)throw new Error('"'+f.name+'" 은(는) 10MB를 초과합니다');
-    const path=cardId+'/'+uid()+'_'+safeName(f.name);
+    /* 키는 ASCII(랜덤ID+확장자)로만 — 한글 파일명은 InvalidKey 유발하므로 name 메타로만 보관 */
+    const path=cardId+'/'+uid()+fileExt(f.name);
     await stUpload(path,f);
     added.push({name:f.name,path,size:f.size,type:f.type||''});
   }
@@ -1085,7 +1087,7 @@ function attListHtml(idx){
   if(!c.attachments.length)return '<div style="font-size:12px;color:#9aa0a6;margin-bottom:8px">첨부된 파일이 없습니다</div>';
   return '<div class="att-list">'+c.attachments.map((a,ai)=>
     '<div class="att-item"><span class="att-icon">📄</span>'+
-    '<a class="att-link" href="'+stURL(a.path)+'" target="_blank" rel="noopener" title="'+esc(a.name)+'">'+esc(a.name)+'</a>'+
+    '<a class="att-link" href="'+stURL(a.path,a.name)+'" target="_blank" rel="noopener" title="'+esc(a.name)+'">'+esc(a.name)+'</a>'+
     '<span class="att-size">'+humanSize(a.size)+'</span>'+
     '<button class="att-del" title="삭제" onclick="deleteCardAttachment('+idx+','+ai+')">🗑️</button></div>').join('')+'</div>';
 }
