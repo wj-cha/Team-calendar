@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>TeamCal v1.8</title>
+<title>TeamCal [CSW HQ FI Accounting] v1.8.1</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
 .app{background:#fff;border-radius:12px;border:1px solid #dadce0;overflow:hidden;width:100%;margin:0 auto;box-shadow:0 1px 6px rgba(0,0,0,.08)}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #dadce0;flex-wrap:wrap}
 .logo{font-size:20px;font-weight:600;color:#202124;letter-spacing:-.5px}.logo span{color:#1a73e8}
+.logo .logo-sub{color:#5f6368;font-size:13px;font-weight:500;letter-spacing:0;margin-left:8px}
 .version{font-size:11px;color:#80868b;align-self:flex-end;margin-bottom:2px}
 .spacer{flex:1}
 .add-btn{background:#1a73e8;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500}
@@ -216,6 +217,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
   .app{border-radius:0;border-left:0;border-right:0;border-top:0;overflow:visible;box-shadow:none}
   .topbar{padding:10px 14px}
   .logo{font-size:18px}
+  .logo .logo-sub{font-size:12px;margin-left:6px}
   /* 추가 버튼: 엄지가 닿는 하단 플로팅 버튼 */
   .add-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:150;padding:13px 20px;font-size:14px;box-shadow:0 4px 14px rgba(26,115,232,.45)}
   #sb-toast{bottom:calc(84px + env(safe-area-inset-bottom)) !important;left:16px !important;right:16px !important;text-align:center}
@@ -280,8 +282,8 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.8</span>
+    <div><div class="logo">Team<span>Cal</span><span class="logo-sub">[CSW HQ FI Accounting]</span></div></div>
+    <span class="version">v1.8.1</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
