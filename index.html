@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeamCal v1.7.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TeamCal v1.8</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
 body{background:#f8f9fa;min-height:100vh;padding:12px}
@@ -44,7 +44,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .day-cell{border-right:.5px solid #dadce0;border-bottom:.5px solid #dadce0;min-height:130px;padding:5px;min-width:0;overflow:hidden}
 .day-cell:nth-child(7n){border-right:none}
 .day-num{font-size:12px;color:#5f6368;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:2px}
-.day-num.today{background:#1a73e8 !important;color:#fff !important;font-weight:500}
+.day-num.today,.day-num.today.sat,.day-num.today.sun,.day-num.today.holiday{background:#1a73e8 !important;color:#fff !important;font-weight:500}
 .day-num.other-month{opacity:.3}
 .day-num.sun,.day-num.holiday{color:#e53935 !important}
 .day-num.sat{color:#1a73e8 !important}
@@ -171,7 +171,6 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .att-add:hover{background:#e8f0fe}
 .att-add input{display:none}
 .att-staged{font-size:11px;color:#5f6368;margin-top:4px}
-@media(max-width:640px){.board-panel{flex-direction:column}.kb-col{width:100%;min-width:0}}
 /* 상세 뷰 내 구분선 */
 .detail-row{margin-bottom:12px}
 .detail-label{font-size:11px;font-weight:600;color:#80868b;margin-bottom:3px;letter-spacing:.3px}
@@ -180,22 +179,117 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
 .edit-mode-header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
 .edit-mode-header h3{margin:0}
 .edit-badge{font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:10px;padding:2px 9px;font-weight:500}
-@media(max-width:640px){body{padding:8px}.cal-main{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:1px solid #dadce0}.members-grid{grid-template-columns:1fr}}
+/* ===== 반응형 (★ v1.8) ===== */
+/* 데스크톱 기본값: 모바일 전용 요소는 숨김 */
+.tab-ic{line-height:1}
+.sid-filter-toggle,.dots,#day-agenda{display:none}
+.sid-filters{display:block}
+/* 토스트는 opacity:0으로 사라진 뒤에도 DOM에 남으므로 클릭을 가로채지 않게 함 */
+#sb-toast{pointer-events:none}
+.hol-lbl{font-size:10px;color:#e53935;margin-bottom:2px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 터치 기기에는 hover가 없으므로 기록 수정/삭제 버튼을 항상 표시 */
+@media(hover:none){.cmt-acts{opacity:1}}
+
+/* --- 태블릿·가로 모드 (≤900px): 사이드바가 상단 툴바로, 달력은 화면 너비에 맞춤 --- */
+@media(max-width:900px){
+  .cal-main{flex-direction:column}
+  .sidebar{width:100%;max-height:none;overflow:visible;border-right:none;border-bottom:1px solid #dadce0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px}
+  .sid-ctrl{flex:1;margin:0;padding:0;min-width:150px}
+  .sid-nav{width:38px;height:38px;font-size:22px}
+  .sid-month{font-size:16px;font-weight:600}
+  .today-btn,.sid-filter-toggle{display:inline-block;width:auto;margin:0;padding:8px 14px;font-size:13px;border:1px solid #dadce0;border-radius:18px;background:#fff;cursor:pointer;color:#202124}
+  .today-btn:hover,.sid-filter-toggle:hover{background:#f1f3f4}
+  .sid-filter-toggle.on{border-color:#1a73e8;color:#1a73e8;background:#e8f0fe}
+  .sid-filters{display:none;flex-basis:100%}
+  .sid-filters.open{display:block}
+  #sidebar-members,#sidebar-cats{display:flex;flex-wrap:wrap;gap:6px}
+  .cal-filter-item{border:1px solid #dadce0;border-radius:16px;padding:6px 11px;margin:0}
+  .cal-filter-item .fi-label{flex:none;font-size:13px}
+  .cal-filter-item input[type=checkbox]{width:16px;height:16px}
+  .sid-filter-reset{width:auto;padding:6px 14px;font-size:12px;margin-top:10px}
+  .cal-header,.cal-grid{min-width:0}
+}
+
+/* --- 스마트폰 (≤640px) --- */
+@media(max-width:640px){
+  body{padding:0 0 88px}
+  .app{border-radius:0;border-left:0;border-right:0;border-top:0;overflow:visible;box-shadow:none}
+  .topbar{padding:10px 14px}
+  .logo{font-size:18px}
+  /* 추가 버튼: 엄지가 닿는 하단 플로팅 버튼 */
+  .add-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:150;padding:13px 20px;font-size:14px;box-shadow:0 4px 14px rgba(26,115,232,.45)}
+  #sb-toast{bottom:calc(84px + env(safe-area-inset-bottom)) !important;left:16px !important;right:16px !important;text-align:center}
+  /* 탭: 균등 분할 + 스크롤 시 상단 고정 */
+  .tab-bar{position:sticky;top:0;z-index:40;background:#fff}
+  .tab{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:8px 2px 7px;font-size:11px;text-align:center}
+  .tab-ic{font-size:18px}
+  /* 달력: 날짜 + 색 점, 탭하면 아래에 그날 일정 목록 */
+  .cal-header div{padding:7px 0}
+  .day-cell{min-height:58px;padding:4px 0 5px;display:flex;flex-direction:column;align-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .day-num{width:28px;height:28px;font-size:13px;margin-bottom:3px}
+  .day-cell.sel{background:#f3f8ff}
+  .day-cell.sel .day-num:not(.today){background:#e8f0fe;font-weight:600}
+  .day-cell.sel .day-num.today{box-shadow:0 0 0 3px #c5d8fb}
+  .hol-lbl,.pills{display:none}
+  .dots{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:100%;padding:0 3px}
+  .dots i{display:block;width:6px;height:6px;border-radius:50%}
+  .dots b{font-size:9px;line-height:6px;color:#80868b;font-weight:600}
+  #day-agenda{display:block;border-top:1px solid #dadce0;background:#fafbfc;min-height:140px}
+  .ag-head{display:flex;align-items:baseline;gap:8px;padding:14px 14px 8px;font-size:15px;font-weight:600;color:#202124}
+  .ag-hol{font-size:12px;font-weight:500;color:#e53935}
+  .ag-list{display:flex;flex-direction:column;gap:8px;padding:0 12px 16px}
+  .ag-item{display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 12px;background:#fff;border:1px solid #e8eaed;border-left:4px solid #999;border-radius:10px;cursor:pointer}
+  .ag-item:active{background:#f1f3f4}
+  .ag-body{flex:1;min-width:0}
+  .ag-title{font-size:14px;font-weight:500;color:#202124;line-height:1.35;word-break:break-word}
+  .ag-sub{font-size:11px;color:#80868b;margin-top:2px}
+  .ag-empty{padding:22px 14px;text-align:center;font-size:13px;color:#9aa0a6}
+  /* Task */
+  .task-toolbar{padding:10px 12px;gap:8px}
+  .task-toolbar .filter-select{flex:1 1 0;min-width:0;padding:9px 10px;font-size:16px}
+  .st-tabs{width:100%}
+  .st-tab{flex:1;padding:8px 0;font-size:13px}
+  .task-list{padding:10px 12px}
+  .task-card{padding:12px}
+  .task-check{width:22px;height:22px}
+  .task-top button{padding:8px 10px !important;margin:-6px -6px 0 0}
+  /* 보드: 좌우로 밀어 넘기는 컬럼 */
+  .board-panel{flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:12px;gap:10px;padding:12px;min-height:0;-webkit-overflow-scrolling:touch}
+  .kb-col{flex:0 0 84%;min-width:0;scroll-snap-align:start}
+  .kb-card{cursor:pointer;padding:12px}
+  .kb-add{padding:10px 8px;font-size:13px}
+  /* 팀원 */
+  .members-panel{padding:12px}
+  .members-grid{grid-template-columns:1fr}
+  .icon-action{padding:8px;font-size:17px}
+  /* 팝업: 하단 시트 */
+  .modal-overlay{align-items:flex-end}
+  .modal{width:100%;max-width:100%;max-height:92vh;max-height:92dvh;padding:18px 16px 0;border-radius:16px 16px 0 0}
+  .fg input,.fg select,.fg textarea{padding:11px 12px;font-size:16px}
+  .fg textarea.tall{min-height:140px}
+  #cd-cmt-text,#cd-cmt-edit{font-size:16px !important}
+  .cmt-input-row{flex-wrap:wrap}
+  .cmt-input-row select{width:100%;padding:11px 12px;font-size:16px;color:#202124;background:#fff;border:1px solid #dadce0;border-radius:7px;outline:none}
+  .att-add{padding:10px 14px;font-size:13px}
+  /* 하단 버튼바: 시트 바닥에 딱 붙어 고정. (시트 하단 패딩을 0으로 두고 여백은 버튼바 패딩으로 — sticky는 컨테이너 밖으로 못 나가므로 음수 마진 우회 금지) */
+  .modal-actions{position:sticky;bottom:0;z-index:1;gap:8px;margin:14px -16px 0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #f1f3f4}
+  .btn-cancel,.btn-save,.btn-edit,.btn-danger{flex:1;padding:12px 10px;font-size:14px}
+}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div><div class="logo">Team<span>Cal</span></div></div>
-    <span class="version">v1.7.1</span>
+    <span class="version">v1.8</span>
     <div class="spacer"></div>
     <button class="add-btn" id="main-add-btn" onclick="mainAdd()">+ <span id="add-label">일정 추가</span></button>
   </div>
   <div class="tab-bar">
-    <div class="tab active" onclick="switchTab('cal',this)">📅 일정</div>
-    <div class="tab" onclick="switchTab('task',this)">✅ Task</div>
-    <div class="tab" onclick="switchTab('board',this)">📋 보드</div>
-    <div class="tab" onclick="switchTab('members',this)">👥 팀원 관리</div>
+    <div class="tab active" onclick="switchTab('cal',this)"><span class="tab-ic">📅</span><span class="tab-tx">일정</span></div>
+    <div class="tab" onclick="switchTab('task',this)"><span class="tab-ic">✅</span><span class="tab-tx">Task</span></div>
+    <div class="tab" onclick="switchTab('board',this)"><span class="tab-ic">📋</span><span class="tab-tx">보드</span></div>
+    <div class="tab" onclick="switchTab('members',this)"><span class="tab-ic">👥</span><span class="tab-tx">팀원 관리</span></div>
   </div>
 
   <div class="panel active" id="panel-cal">
@@ -207,11 +301,14 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
           <button class="sid-nav" onclick="changeMonth(1)">&#8250;</button>
         </div>
         <button class="today-btn" onclick="goToday()">오늘</button>
-        <div class="sidebar-sec">팀원 필터</div>
-        <div id="sidebar-members"></div>
-        <div class="sidebar-sec" style="margin-top:14px">카테고리 필터</div>
-        <div id="sidebar-cats"></div>
-        <button class="sid-filter-reset" onclick="resetCalFilter()">↺ 필터 초기화</button>
+        <button class="sid-filter-toggle" id="sid-filter-toggle" onclick="toggleFilters()">⚙ 필터</button>
+        <div class="sid-filters" id="sid-filters">
+          <div class="sidebar-sec">팀원 필터</div>
+          <div id="sidebar-members"></div>
+          <div class="sidebar-sec" style="margin-top:14px">카테고리 필터</div>
+          <div id="sidebar-cats"></div>
+          <button class="sid-filter-reset" onclick="resetCalFilter()">↺ 필터 초기화</button>
+        </div>
       </div>
       <div class="cal-wrap">
         <div class="cal-header">
@@ -220,6 +317,7 @@ body{background:#f8f9fa;min-height:100vh;padding:12px}
         <div class="cal-grid" id="cal-grid"></div>
       </div>
     </div>
+    <div id="day-agenda"></div>
   </div>
 
   <div class="panel" id="panel-task">
@@ -428,6 +526,7 @@ const DEFAULT_MEMBERS=[
 let members=[],schedules=[],tasks=[],cards=[];
 let selCardIdx=null;
 let curYear,curMonth,curTab='cal';
+let selDay=null; // 모바일: 달력에서 선택한 날짜(YYYY-MM-DD) → 하단 일정 목록
 const today=new Date();
 let editMemberIdx=null,selSchedIdx=null,selTaskIdx=null,stFilter='all',mmSelColor=COLORS[0],selAssignees=[];
 /* 캘린더 Task 필터 상태: null = 전체 선택 */
@@ -537,6 +636,10 @@ function resetCalFilter(){
 /* ===== CALENDAR ===== */
 function renderCal(){
   document.getElementById('month-title').textContent=curYear+'.'+p2(curMonth+1);
+  /* 선택일이 현재 표시 월 밖이면 보정: 이번 달이면 오늘, 아니면 1일 */
+  const ym=curYear+'-'+p2(curMonth+1);
+  if(!selDay||selDay.slice(0,7)!==ym){const t=fmtDate(today);selDay=t.slice(0,7)===ym?t:ym+'-01';}
+  updateFilterBadge();
   const grid=document.getElementById('cal-grid');
   const first=new Date(curYear,curMonth,1);
   const last=new Date(curYear,curMonth+1,0);
@@ -552,45 +655,113 @@ function renderCal(){
     const dn=+c.date.split('-')[2];
     const dow=new Date(c.date).getDay();
     let dayClass='',holidayLabel='';
-    if(HOLIDAYS[c.date]){dayClass=' holiday';if(c.cur)holidayLabel='<div style="font-size:10px;color:#e53935;margin-bottom:2px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+HOLIDAYS[c.date]+'</div>';}
+    if(HOLIDAYS[c.date]){dayClass=' holiday';if(c.cur)holidayLabel='<div class="hol-lbl">'+HOLIDAYS[c.date]+'</div>';}
     else if(dow===0)dayClass=' sun';
     else if(dow===6)dayClass=' sat';
-    const isWeekendOrHoliday=(dow===0||dow===6||!!HOLIDAYS[c.date]);
+
+    const it=dayItems(c.date);
 
     /* 일정 pills */
-    const schedPills=isWeekendOrHoliday?'':schedules.filter(e=>{
-      if(e.start>c.date||e.end<c.date)return false;
-      return calFilterMembers===null||calFilterMembers.has(e.memberId);
-    }).map(e=>{
-      const si=schedules.indexOf(e);const m=memberById(e.memberId);const bg=m?.color||'#999';
+    const schedPills=it.scheds.map(({si,e})=>{
+      const m=memberById(e.memberId);const bg=m?.color||'#999';
       return '<div class="event-pill" style="background:'+bg+';color:#fff" onclick="showSchedDetail('+si+')">'+(m?esc(m.name):'?')+' '+esc(e.type)+'</div>';
     }).join('');
 
-    let taskHtml='';
-    if(!isWeekendOrHoliday){
-      tasks.forEach((t,idx)=>{
-        const mOk=calFilterMembers===null||t.assignees.some(ai=>calFilterMembers.has(ai));
-        const cOk=calFilterCats===null||calFilterCats.has(t.cat);
-        if(!mOk||!cOk)return;
-        /* 기간 pill */
-        if(t.rangeStart&&t.rangeEnd&&c.date>=t.rangeStart&&c.date<=t.rangeEnd){
-          const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
-          const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
-          taskHtml+='<div class="task-pill-range" style="background:'+RANGE_BG+';color:'+RANGE_CL+';border:1px solid '+RANGE_BR+';opacity:'+(t.done?'.55':'1')+'" onclick="showTaskDetail('+idx+')">'+label+'</div>';
-        }
-        /* 데드라인 pill — 기간 있으면 생략 */
-        if(t.due===c.date&&!(t.rangeStart&&t.rangeEnd)){
-          const ov=!t.done&&t.due<fmtDate(today);
-          const bg=t.done?'#e0e0e0':ov?'#fce8e6':'#e8f0fe';
-          const cl=t.done?'#9e9e9e':ov?'#c5221f':'#1a73e8';
-          const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
-          taskHtml+='<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
-        }
-      });
-    }
+    /* Task pills */
+    const taskHtml=it.tasks.map(({idx,t,kind})=>{
+      if(kind==='range'){ /* 기간 pill */
+        const isStart=c.date===t.rangeStart,isEnd=c.date===t.rangeEnd,isSingle=t.rangeStart===t.rangeEnd;
+        const label=isStart||isSingle?'▶ '+esc(t.title):isEnd?'◀ '+esc(t.title):'─ '+esc(t.title);
+        return '<div class="task-pill-range" style="background:'+RANGE_BG+';color:'+RANGE_CL+';border:1px solid '+RANGE_BR+';opacity:'+(t.done?'.55':'1')+'" onclick="showTaskDetail('+idx+')">'+label+'</div>';
+      }
+      /* 데드라인 pill — 기간 있으면 생략됨(dayItems) */
+      const ov=!t.done&&t.due<fmtDate(today);
+      const bg=t.done?'#e0e0e0':ov?'#fce8e6':'#e8f0fe';
+      const cl=t.done?'#9e9e9e':ov?'#c5221f':'#1a73e8';
+      const br=t.done?'#bbb':ov?'#f5c6c6':'#c5d8fb';
+      return '<div class="event-pill" style="background:'+bg+';color:'+cl+';border:1px solid '+br+'" onclick="showTaskDetail('+idx+')">✦ '+esc(t.title)+'</div>';
+    }).join('');
 
-    return '<div class="day-cell'+(c.cur?'':' other-month-cell')+'"><div class="day-num'+(isT?' today':'')+(c.cur?'':' other-month')+dayClass+'">'+dn+'</div>'+holidayLabel+schedPills+taskHtml+'</div>';
+    return '<div class="day-cell'+(c.cur?'':' other-month-cell')+(c.date===selDay?' sel':'')+'" onclick="selectDay(\''+c.date+'\')"><div class="day-num'+(isT?' today':'')+(c.cur?'':' other-month')+dayClass+'">'+dn+'</div>'+holidayLabel+'<div class="pills">'+schedPills+taskHtml+'</div>'+dayDots(it)+'</div>';
   }).join('');
+  renderAgenda();
+}
+
+/* 그날 표시할 일정/Task 계산 — 필터·주말/공휴일 규칙 포함 (달력 칸·점·모바일 목록이 공유) */
+function dayItems(date){
+  const dow=new Date(date).getDay();
+  if(dow===0||dow===6||HOLIDAYS[date])return {scheds:[],tasks:[]};
+  const scheds=[];
+  schedules.forEach((e,si)=>{
+    if(e.start>date||e.end<date)return;
+    if(calFilterMembers!==null&&!calFilterMembers.has(e.memberId))return;
+    scheds.push({si,e});
+  });
+  const tk=[];
+  tasks.forEach((t,idx)=>{
+    const mOk=calFilterMembers===null||t.assignees.some(ai=>calFilterMembers.has(ai));
+    const cOk=calFilterCats===null||calFilterCats.has(t.cat);
+    if(!mOk||!cOk)return;
+    if(t.rangeStart&&t.rangeEnd&&date>=t.rangeStart&&date<=t.rangeEnd)tk.push({idx,t,kind:'range'});
+    if(t.due===date&&!(t.rangeStart&&t.rangeEnd))tk.push({idx,t,kind:'due'});
+  });
+  return {scheds,tasks:tk};
+}
+
+/* 모바일 달력 칸의 색 점 (일정=팀원 색, Task=기간 보라/마감 파랑·초과 빨강·완료 회색) */
+function dayDots(it){
+  const colors=[];
+  it.scheds.forEach(({e})=>colors.push(memberById(e.memberId)?.color||'#999'));
+  it.tasks.forEach(({t,kind})=>colors.push(kind==='range'?RANGE_CL:(t.done?'#bdbdbd':(t.due<fmtDate(today)?'#c5221f':'#1a73e8'))));
+  if(!colors.length)return '';
+  const MAX=4;
+  return '<div class="dots">'+colors.slice(0,MAX).map(c=>'<i style="background:'+c+'"></i>').join('')+(colors.length>MAX?'<b>+'+(colors.length-MAX)+'</b>':'')+'</div>';
+}
+
+/* 모바일: 날짜 탭 → 아래 목록 갱신 (데스크톱에서는 pill이 이미 보이므로 동작 안 함) */
+function selectDay(date){
+  if(!window.matchMedia('(max-width:640px)').matches)return;
+  selDay=date;
+  const [y,m]=date.split('-').map(Number);
+  curYear=y;curMonth=m-1; /* 이전/다음 달 칸을 탭하면 그 달로 이동 */
+  renderCal();
+}
+
+/* 모바일: 선택한 날짜의 일정·Task 목록 */
+function renderAgenda(){
+  const el=document.getElementById('day-agenda');
+  if(!el||!selDay)return;
+  const d=new Date(selDay+'T00:00:00');
+  const dow=d.getDay();
+  const hol=HOLIDAYS[selDay];
+  const it=dayItems(selDay);
+  const rows=[];
+  it.scheds.forEach(({si,e})=>{
+    const m=memberById(e.memberId);
+    rows.push('<div class="ag-item" style="border-left-color:'+(m?.color||'#999')+'" onclick="showSchedDetail('+si+')">'+
+      '<div class="ag-body"><div class="ag-title">'+esc(m?m.name:'?')+' · '+esc(e.type)+'</div>'+
+      '<div class="ag-sub">'+e.start+(e.start!==e.end?' ~ '+e.end:'')+(e.memo?' · '+esc(e.memo):'')+'</div></div></div>');
+  });
+  it.tasks.forEach(({idx,t,kind})=>{
+    const ov=!t.done&&t.due<fmtDate(today);
+    const color=kind==='range'?RANGE_CL:(t.done?'#bdbdbd':ov?'#c5221f':'#1a73e8');
+    const sub=(kind==='range'?'📆 '+t.rangeStart+' ~ '+t.rangeEnd:'✦ 마감'+(ov?' (기한 초과)':''))+' · '+esc(t.cat)+(t.done?' · ✓ 완료':'');
+    rows.push('<div class="ag-item" style="border-left-color:'+color+';opacity:'+(t.done?'.6':'1')+'" onclick="showTaskDetail('+idx+')">'+
+      '<div class="ag-body"><div class="ag-title">'+esc(t.title)+'</div><div class="ag-sub">'+sub+'</div></div>'+
+      '<div class="assignees">'+assAvatars(t.assignees)+'</div></div>');
+  });
+  const emptyMsg=hol?'공휴일입니다':(dow===0||dow===6)?'주말입니다':'등록된 일정이 없습니다';
+  el.innerHTML='<div class="ag-head"><span>'+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+'일월화수목금토'[dow]+')</span>'+(hol?'<span class="ag-hol">'+esc(hol)+'</span>':'')+'</div>'+
+    (rows.length?'<div class="ag-list">'+rows.join('')+'</div>':'<div class="ag-empty">'+emptyMsg+'</div>');
+}
+
+/* 필터 패널 열기/닫기 (≤900px) + 적용 중 표시 */
+function toggleFilters(){document.getElementById('sid-filters').classList.toggle('open');}
+function updateFilterBadge(){
+  const b=document.getElementById('sid-filter-toggle');if(!b)return;
+  const on=calFilterMembers!==null||calFilterCats!==null;
+  b.textContent='⚙ 필터'+(on?' ●':'');
+  b.classList.toggle('on',on);
 }
 function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++;}else if(curMonth<0){curMonth=11;curYear--;}renderCal();}
 function goToday(){curYear=today.getFullYear();curMonth=today.getMonth();renderCal();}
